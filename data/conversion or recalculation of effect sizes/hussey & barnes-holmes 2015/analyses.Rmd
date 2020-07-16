@@ -1,0 +1,102 @@
+---
+title: "effect size calculator"
+author: "Ian Hussey"
+date: "`r format(Sys.time(), '%d %B %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    highlight: haddock
+    theme: flatly
+    toc: yes
+    toc_float: yes
+---
+
+```{r, include=FALSE}
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE,
+                      fig.height = 3, 
+                      fig.width = 6)
+```
+
+```{r}
+
+# dependencies
+library(tidyverse)
+library(schoRsch)
+library(ez)
+library(schoRsch)
+library(janitor)
+
+```
+
+# Data
+
+```{r}
+
+# get data
+data_processed <- read_csv("data.csv") %>%
+  clean_names() %>%
+  rownames_to_column(var = "id") %>%
+  mutate(depression_group = ifelse(dass_d_score < 10, "low", "high")) %>%
+  select(id,
+         "life_good_feel_good_before_exposure", "life_good_feel_bad_before_exposure", 
+         "life_bad_feel_good_before_exposure", "life_bad_feel_bad_before_exposure", 
+         "life_good_feel_good_after_exposure", "life_good_feel_bad_after_exposure", 
+         "life_bad_feel_good_after_exposure", "life_bad_feel_bad_after_exposure",
+         depression_group) %>%
+  pivot_longer(cols = c("life_good_feel_good_before_exposure", "life_good_feel_bad_before_exposure", 
+                        "life_bad_feel_good_before_exposure", "life_bad_feel_bad_before_exposure", 
+                        "life_good_feel_good_after_exposure", "life_good_feel_bad_after_exposure", 
+                        "life_bad_feel_good_after_exposure", "life_bad_feel_bad_after_exposure"),
+               names_to = "trial_type",
+               values_to = "D") %>%
+  mutate(timepoint = ifelse(str_detect(trial_type, "_before_exposure"), "pre", "post"),
+         trial_type = str_remove(trial_type, "_before_exposure"),
+         trial_type = str_remove(trial_type, "_after_exposure"))
+
+```
+
+# mixed within between ANOVA
+
+```{r}
+
+fit <- 
+  ez::ezANOVA(data     = data_processed,
+              dv       = D,
+              within   = c(trial_type, timepoint),
+              between  = depression_group,
+              wid      = id,
+              type     = 3,
+              detailed = TRUE)
+
+# eta squared and generalized eta squared
+results_etasq <- 
+  fit$ANOVA %>%
+  mutate(etasq = SSn / sum(SSn),
+         r = sqrt(etasq),
+         etasq = round(etasq, 2),
+         r = round(r, 2)) %>%
+  select(Effect, etasq, r, p) 
+
+# partial eta squared
+results_petasq_and_getasq <- 
+  anova_out(fit, 
+            etasq = "partial", 
+            sph.cor = "no",
+            print = FALSE)$`--- ANOVA RESULTS     ------------------------------------` %>%
+  mutate(petasq = as.numeric(as.character(petasq)),
+         getasq = as.numeric(as.character(getasq))) %>%
+  select(Effect, petasq, getasq)
+
+# combine
+results_proportion_of_variance <- 
+  left_join(results_etasq, results_petasq_and_getasq, by = "Effect")
+
+results_proportion_of_variance
+
+```
+
+NB it is the depression_group:timepoint interaction that is reported in the manuscript and used in the meta analysis
+
+
+
