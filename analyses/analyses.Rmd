@@ -19,12 +19,15 @@ output:
 
 # Narrative
 
-1. use vahey's data, attempt to reproduce meta results
-2. take vahey's data, attempt to reproduce effect sizes from original papers
-3. critique ES inclusion strategy
-  - note number of ESs not included and their bias
-  - note problems in the selection strategy: unblinded, clinically relevant (violations), a priori predicable
-4. new meta using full list of corrected ES and better analytic strategy.
+1. note that vahey is used to justify sample sizes, which are low in the literature.
+2. use vahey's meta-analytic effect size to reproduce his power analyses and sample size recommendations. nope. 
+3. use vahey's weighted average effect sizes presented in his forest plot, attempt to reproduce meta results using descriptions of his analytic method. nope.
+4. use vahey's individual effect sizes presented in his supplementary materials, attempt to reproduce his weighted average effect sizes presented in his forest plot. nope.
+5. go back to the original articles, reextract and convert their effect sizes, attempt to reproduce vahey's individual effect sizes presented in his supplementary materials. nope on two fronts: many errors, many absences. 
+  - in considering his absences, note the inconsistent choices that were made that favored higher ES.
+  - note problems in the selection strategy itself: unblinded, clinically relevant (violations), a priori predicable
+6. conduct a new meta using a more complete list of correct ES and better analytic strategy.
+7. make new power and sample size recommendations. compare the sample sizes employed in the published literature to this criterion: what % meet 80% power, what % reported sig results, what observed power these studies would have had using my meta estimate.
 
 ```{r, include=FALSE}
 
@@ -66,8 +69,18 @@ add_heterogeneity_metrics_to_forest <- function(fit) {
 # notation off
 options(scipen = 999)
 
-# get data
-## vahey supplementary data
+```
+
+# Computationally reproduce Vahey et al's results
+
+Reproducing Vahey's results involves numerous assumptions about details that are not explicated in the paper. For example, the Hunter & Schmidt method employed in the original meta-analysis weights the effect sizes by the inverse of the sample size for each study. However, (a) multiple sample sizes were obtained for several studies because they had mulitple effect sizes, and yet (b) the forest plot table reported in the manuscript reports integer values for all Ns that do not corrispond to these weighted Ns, despite weighted df (i.e., N-2) apparently being used to calculate the weighted mean effect sizes.  
+
+In the absence of clear information about what the original authors did, the new meta analysis employed the weighted mean effect sizes, their CIs, and Ns reported in Vahey et al.'s forest plot, from which SEs were calculated.
+
+[should i drop the code here re whether their weighted averaging can be replicated?]
+
+```{r}
+
 data_for_meta_vahey_input <- read.csv("../data/data_vahey_et_al_2015.csv")
 
 data_for_meta_vahey_from_supplementary_materials <- data_for_meta_vahey_input %>%
@@ -80,12 +93,17 @@ data_for_meta_vahey_from_supplementary_materials <- data_for_meta_vahey_input %>
   summarize(mean_r_weighted_by_df = mean(r_weighted_by_df))
 
 data_for_meta_vahey_from_forest_plot <- data_for_meta_vahey_input %>%
-  select(article_abbreviated, mean_r_forest_plot_numeric, ci_lower_forest_plot_numeric, ci_upper_forest_plot_numeric, n_forest_plot) %>%
+  select(article_abbreviated, 
+         mean_r_forest_plot_numeric, 
+         ci_lower_forest_plot_numeric, 
+         ci_upper_forest_plot_numeric, 
+         n_forest_plot) %>%
   na.omit()
 
 data_for_meta_vahey <- 
   left_join(data_for_meta_vahey_from_supplementary_materials, 
-            data_for_meta_vahey_from_forest_plot, by = "article_abbreviated") %>%
+            data_for_meta_vahey_from_forest_plot, 
+            by = "article_abbreviated") %>%
   mutate(recomputed_es_matches_forest_plot = round(mean_r_weighted_by_df, 2) == round(mean_r_forest_plot_numeric, 2),
          diff_between_forest_plot_amd_recalculated_values = round(mean_r_weighted_by_df, 2) - round(mean_r_forest_plot_numeric, 2),
          yi = mean_r_forest_plot_numeric,
@@ -93,15 +111,7 @@ data_for_meta_vahey <-
          ni = n_forest_plot) %>%
   rename(article = article_abbreviated)
 
-## reextracted effect sizes
-data_for_meta_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
-  rowwise() %>%
-  mutate(clinically_relevant_criterion_both_raters = as.logical(min(c(clinically_relevant_criterion_rater_1, clinically_relevant_criterion_rater_2)))) %>%
-  ungroup()
-
 ```
-
-# Computationally reproduce Vahey et al's results
 
 ## Reproduce results using their data and methods 
 
@@ -176,6 +186,16 @@ However, one tailed correlation tests with alpha = .05 are uncommon in the liter
 Updated to use the reproduced meta's results: to detect a zero order correlation with 80% power, `r ceiling(pwr.r.test(n = NULL, r = predictions_reproduced$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants were needed when using the estimated ES (`r predictions_reproduced$estimate[1]`) or `r ceiling(pwr.r.test(n = NULL, r = predictions_reproduced$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` if using the lower bound of the CI (`r predictions_reproduced$estimate[3]`). This represents a required sample size that is `r round(ceiling(pwr.r.test(n = NULL, r = predictions_reproduced$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n) / ceiling(pwr.r.test(n = NULL, r = 0.40, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 1)` times larger than that reccomended by the original meta analysis.
 
 ## Reproduce their extracted effect sizes 
+
+```{r}
+
+# reextracted effect sizes
+data_for_meta_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
+  rowwise() %>%
+  mutate(clinically_relevant_criterion_both_raters = as.logical(min(c(clinically_relevant_criterion_rater_1, clinically_relevant_criterion_rater_2)))) %>%
+  ungroup()
+
+```
 
 ```{r fig.height=4.5, fig.width=4.5}
 
