@@ -11,21 +11,6 @@ output:
     toc_float: yes
 ---
 
-# Manuscript narrative outline
-
-Section 1: the reproducibility of Vahey et al.'s (2015) data and results.
-
-1. Vahey et al. is frequently cited to justify sample sizes in the IRAP literature. These sample sizes are very low (median sample size < 40).
-2. I used Vahey et al.'s meta-analytic effect size to reproduce their power analyses and sample size recommendations. Computationally reproducible, but I found they made some weird choices, results are in the IRAP's favor.
-3. I then used Vahey et al.'s weighted average effect sizes presented in their forest plot and descriptions of their analytic method to try to computationally reproduce their meta results. Fairly close, but can't reproduce.
-4. Then I used Vahey et al.'s individual effect sizes reported in their supplementary materials to attempt to reproduce the weighted average effect sizes presented in their forest plot. Nope, several errors.
-5. Then I went back to the original articles, reextracted and converted their effect sizes, and attempted to reproduce Vahey et al.'s individual effect sizes presented in their supplementary materials. Nope on multiple fronts: many errors, many absences, many questionable inclusions.
-
-Section 2: a new meta-analysis using a complete and corrected set of effect sizes, and a more up to date analytic strategy.  
-
-6. New meta. Effect size is less than half that reported in Vahey et al. (Vahey et al. *r* = .45 vs. new *r* = .18).
-7. Finally, I conducted new power analyses using the new meta effect size. Recommended sample sizes were more than 8 times those reported in Vahey et al. (Vahey et al. Ns = 29 to 37 vs. new Ns = 240 to 782). To my knowledge, no or almost no studies in the published literature meet these sample size recommendations. 
-
 ```{r, include=FALSE}
 
 knitr::opts_chunk$set(message = FALSE,
@@ -42,6 +27,9 @@ library(metafor)
 library(pwr)
 library(knitr)
 library(kableExtra)
+
+dir.create("models")
+dir.create("plots")
 
 # function to round all numeric vars in a data frame
 round_df <- function(df, n_digits = 3) {
@@ -112,6 +100,9 @@ fit_reproduced <-
       method  = "HS",  # Hunter Schmidt method
       data    = data_vahey_forest_plot,
       slab    = article)
+
+# save to disk for pdf plots
+write_rds(fit_reproduced, "models/fit_reproduced.rds")
 
 # make predictions 
 predictions_reproduced <-
@@ -391,6 +382,9 @@ fit_new <-
          data   = data_for_meta_new,
          slab   = paste(article, es_number))
 
+# save to disk for pdf plots
+write_rds(fit_new, "models/fit_new.rds")
+
 # make predictions 
 predictions_new <-
   predict(fit_new, digits = 5) %>%
@@ -416,7 +410,7 @@ metafor::forest(transf.ztor(data_for_meta_new$yi),
                 efac = 0,                  ### remove vertical bars at end of CIs
                 pch = 19,                  ### changing point symbol to filled circle
                 col = "gray40",            ### change color of points/CIs
-                psize = 2,                 ### increase point size
+                psize = 1.5,                 ### increase point size
                 cex.lab = 1, 
                 cex.axis = 1,   ### increase size of x-axis title/labels
                 lty = c("solid","blank"),  ### remove horizontal line at top of plot
