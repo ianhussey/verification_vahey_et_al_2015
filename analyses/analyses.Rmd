@@ -78,19 +78,35 @@ The power analyses relied on the accuracy of the meta-analytic effect size. So, 
 
 Information about implementation of Hunter & Schmidt-style meta-analysis in metafor from [here](http://www.metafor-project.org/doku.php/tips:hunter_schmidt_method).
 
+Vahey et al. (2015) do not mention applying any transformations to their data. However, they cited using code by Field & Gillett (2010) to implement their analyses. Inspection of this code reveals two transformations were applied: Overton's (1998, page 358) correction ($r_{adjusted} = r - (r*(1-r^2)) / (2*(n-3))$) and Fisher's r-to-z correction. This would explain why Vahey et al.'s (2015) confidence intervals are asymmetric in their forest plot.  
+
+Reverse engineering the forest plot:
+
+- effect sizes are weighted means, not transformed with either transformation
+- their CIs however are likely the transformed CIs as they are asymmetrical - check using same method as ES?
+- the meta ES is more likely to be the transformed ES without back-transformation. that would make the CIs congruent with Vahey et al, and the effect size only slightly different. It is hard to know.
+  - Either the numerical result is approximately reproducible but Vahey mislabelled it, and therefore misconducted the power analyses; or the numerical result is not reproducible.
+- either way, vahey does not explicitly state that they used fischers r to z transformations (although they make some reference to the method in plots), and they make no reference to an Overton transformation, although it is implemented in the code provided by Field & Gillett's (2010) which Vahey reported they used. This cannot be verfied directly as Vahey declined to share his code with me. 
+
+Smaller issues:
+
+- the forest plot employs the diamond shape to represent the CR intervals where it typically illustrates the CIs. 
+- CR in the forest plot is labeled as CI, but elsewhere in text this numerical width is referred to as the CR.
+
 ```{r fig.height=5.5, fig.width=8}
 
 data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
 
+# wrangle
 data_vahey_forest_plot <- data_vahey %>%
   select(article = article_abbreviated, 
          yi = mean_r_forest_plot_numeric, 
          ni = n_forest_plot,
-         ci_lower_forest_plot_numeric, 
-         ci_upper_forest_plot_numeric) %>%
+         ci_lower = ci_lower_forest_plot_numeric, 
+         ci_upper = ci_upper_forest_plot_numeric) %>%
   na.omit() %>%
   # convert CIs to variance
-  mutate(vi = ((ci_upper_forest_plot_numeric - ci_lower_forest_plot_numeric)/(1.96*2))^2) 
+  mutate(vi = ((ci_upper - ci_lower)/(1.96*2))^2)
 
 # fit model
 fit_reproduced <- 
@@ -104,22 +120,31 @@ fit_reproduced <-
 # save to disk for pdf plots
 write_rds(fit_reproduced, "models/fit_reproduced.rds")
 
+```
+
+### With back transformations
+
+```{r}
+
 # make predictions 
 predictions_reproduced <-
   predict(fit_reproduced, digits = 5) %>%
   as.data.frame() %>%
   gather(parameter, estimate) %>%
-  round_df(2) %>%
   mutate(parameter = dplyr::recode(parameter,
                                    "pred" = "Meta r",
                                    "ci.lb" = "95% CI lower",
                                    "ci.ub" = "95% CI upper",
                                    "cr.lb" = "95% CR lower",
                                    "cr.ub" = "95% CR upper")) %>%
-  filter(parameter != "se")
+  filter(parameter != "se") %>%
+  # undo the r to z transformation that was likely applied by Field & Gillett's (2010) scripts
+  mutate(estimate = transf.ztor(estimate)) %>%
+  round_df(2)
 
 # plot
 metafor::forest(fit_reproduced,
+                transf  = transf.ztor,
                 xlab = substitute(paste("Pearson's ", italic('r'))),
                 refline = 0,
                 addcred = TRUE,
@@ -150,7 +175,108 @@ Meta effect: `r meta_effect_reproduced`.
 
 Heterogeneity: `r meta_heterogeneity_reproduced`.
 
-The results of Vahey et al.'s meta-analysis could therefore not be computationally reproduced using the data they reported in their forest plot and their descriptions of their analytic approach. Differences in the estimate of the meta effect size were similar but not identical. Differences in estimated heterogeneity were large (large heterogeneity in Vahey et al., no heterogeneity in my analysis).
+### Without back transformations
+
+```{R}
+
+# make predictions 
+predictions_reproduced <-
+  predict(fit_reproduced, digits = 5) %>%
+  as.data.frame() %>%
+  gather(parameter, estimate) %>%
+  mutate(parameter = dplyr::recode(parameter,
+                                   "pred" = "Meta r",
+                                   "ci.lb" = "95% CI lower",
+                                   "ci.ub" = "95% CI upper",
+                                   "cr.lb" = "95% CR lower",
+                                   "cr.ub" = "95% CR upper")) %>%
+  filter(parameter != "se") %>%
+  # undo the r to z transformation that was likely applied by Field & Gillett's (2010) scripts
+  round_df(2)
+
+# plot
+metafor::forest(fit_reproduced,
+                xlab = "Z scores",
+                refline = 0,
+                addcred = TRUE,
+                mlab = add_heterogeneity_metrics_to_forest(fit_reproduced),
+                xlim = c(-.75, 1.25),
+                at = c(-.25, 0, .25, .5, .75, 1))
+text(-.75, 17, "Reproduced from effect sizes in Vahey et al.'s forest plot", pos = 4)
+text(1.25, 16.85, substitute(paste(italic('Z'), " [95% CI]")), pos = 2)
+
+# summarize results
+meta_effect_reproduced <- 
+  paste0("k = ", fit_reproduced$k, 
+         ", Z = ", predictions_reproduced$estimate[1],
+         ", 95% CI [", predictions_reproduced$estimate[2], ", ", predictions_reproduced$estimate[3], "]", 
+         ", 95% CR [", predictions_reproduced$estimate[4], ", ", predictions_reproduced$estimate[5], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_reproduced$zval)), digits = 1))  # exact p value from z score
+
+meta_heterogeneity_reproduced <- 
+  paste0("Q(df = ", fit_reproduced$k - 1, ") = ", round(fit_reproduced$QE, 2), 
+         ", p ",       apa_p_value(fit_reproduced$QEp),
+         ", tau^2 = ", round(fit_reproduced$tau2, 2), 
+         ", I^2 = ",   round(fit_reproduced$I2, 2),
+         ", H^2 = ",   round(fit_reproduced$H2, 2))
+
+round(transf.ztor(fit_reproduced$b), 2)
+
+```
+
+Meta effect: `r meta_effect_reproduced`.
+
+Heterogeneity: `r meta_heterogeneity_reproduced`.
+
+- Minimum sample size using r = `r round(transf.ztor(.45), 2)` = `r ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
+- Minimum sample size using lower CI r = .40 = `r ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.40), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
+- The results of Vahey et al.'s power analyses could therefore be computationally reproduced. 
+- This suggested sample sizes are `r round(ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
+
+## Assessment of bias
+
+### Funnel plot
+
+```{r fig.height=4, fig.width=4}
+
+metafor::funnel(fit_reproduced)
+
+```
+
+### Rank correlation between effect size and SE
+
+"Kendall's t as a measure of the rank correlation between Zr and its associated standard error"
+
+original result: "r(df = 15) = .09, p = .66 (two-tailed)"
+
+```{r}
+
+cor.test(data_vahey_forest_plot$yi, 
+         sqrt(data_vahey_forest_plot$vi), 
+         method = "kendall",
+         alternative = "two.sided",
+         exact = FALSE)
+
+```
+
+### Vevea and Wood's (2005) sensitivity analysis
+
+```{r}
+
+library(weightr)
+
+weightfunct(data_vahey_forest_plot$yi, data_vahey_forest_plot$vi,
+            steps = c(0.01, 0.05, 0.50, 1.00), weights = c(1.0, 0.9, 0.7, 0.5))
+
+weightfunct(data_vahey_forest_plot$yi, data_vahey_forest_plot$vi)
+
+```
+
+```{r}
+
+library(PublicationBias)
+
+```
 
 ## Weighted-average effect sizes reported in forest plot
 
@@ -172,17 +298,38 @@ data_weighted_effect_sizes <- data_vahey %>%
   ungroup() %>%
   mutate(r_weighted_by_df = r_supplementary*(df_supplementary/mean_df)) %>%
   group_by(article) %>%
-  summarize(r_recalculated = round(mean(r_weighted_by_df), 2)) %>%
+  summarize(r_recalculated_weighted_mean = mean(r_weighted_by_df)) %>%
   # join with forest plot effect sizes
-  left_join(data_vahey_forest_plot %>% select(article, r_forest_plot = yi), by = "article") %>%
-  mutate(congruence = ifelse(r_forest_plot == r_recalculated, "Congruent", "Incongruent"),
+  left_join(data_vahey_forest_plot %>% select(article, 
+                                              r_forest_plot = yi,
+                                              n_forest_plot = ni,
+                                              ci_lower_forest_plot = ci_lower,
+                                              ci_upper_forest_plot = ci_upper), by = "article") %>%
+  # transformations
+  # applied in Field & Gillett's (2010) SPSS code, which Vahey et al. cite as using to calculate their meta analysis and therefore forest plotted results, but do not mention these transformations in their manuscript
+  # 1. apply Overton (1998, page 358) correction
+  mutate(r_recalculated_weighted_mean_adjusted = r_recalculated_weighted_mean - (r_recalculated_weighted_mean*(1-r_recalculated_weighted_mean^2)) / (2*(n_forest_plot-3))) %>%
+  # 2. Fischers r-to-z correction
+  escalc(measure = "ZCOR",
+         ri = r_recalculated_weighted_mean_adjusted,
+         ni = n_forest_plot,
+         data = .,
+         slab = article,
+         digits = 8) %>%
+  rename(r_recalculated_weighted_mean_adjusted_transformed = yi) %>%
+  mutate(congruence = ifelse(r_forest_plot == r_recalculated_weighted_mean_adjusted_transformed, "Congruent", "Incongruent"),
          congruence = fct_relevel(congruence, "Incongruent", "Congruent"),
-         difference = r_recalculated - r_forest_plot)
+         difference = r_recalculated_weighted_mean_adjusted_transformed - r_forest_plot)
+
+```
+
+
+```{r fig.height=4.5, fig.width=4.5}
 
 # plot
-ggplot(data_weighted_effect_sizes, aes(r_forest_plot, r_recalculated)) +
+ggplot(data_weighted_effect_sizes, aes(r_forest_plot, r_recalculated_weighted_mean)) +
   geom_abline(slope = 1, linetype = "dotted") +
-  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
+  geom_point(size = 2.25) +
   theme_classic() +
   scale_color_viridis_d(begin = 0.25, end = 0.75) + 
   theme(legend.position = c(0.25, 0.85),
@@ -190,6 +337,19 @@ ggplot(data_weighted_effect_sizes, aes(r_forest_plot, r_recalculated)) +
         legend.box.background = element_rect(colour = "black")) +
   xlim(0.35, 0.75) +
   ylim(0.35, 0.75) +
+  xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
+  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials")
+
+ggplot(data_weighted_effect_sizes, aes(r_forest_plot, r_recalculated_weighted_mean_adjusted_transformed)) +
+  geom_abline(slope = 1, linetype = "dotted") +
+  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
+  theme_classic() +
+  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
+  theme(legend.position = c(0.25, 0.85),
+        legend.title = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
+  xlim(0.35, 0.9) +
+  ylim(0.35, 0.9) +
   xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
   ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials")
 
@@ -207,6 +367,56 @@ data_weighted_effect_sizes %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
   
 ```
+
+```{r fig.height=4.5, fig.width=4.5}
+
+# plot
+data_weighted_effect_sizes %>%
+  escalc(measure = "COR",
+         ri = r_recalculated_weighted_mean,
+         ni = n_forest_plot,
+         data = .,
+         slab = article,
+         digits = 8) %>%
+  ggplot(aes(ci_lower_forest_plot, yi - vi*1.96)) +
+  geom_abline(slope = 1, linetype = "dotted") +
+  geom_point(size = 2.25) +
+  theme_classic() +
+  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
+  theme(legend.position = c(0.25, 0.85),
+        legend.title = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
+  xlim(-0.3, 0.7) +
+  ylim(-0.3, 0.7) +
+  xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
+  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials") +
+  ggtitle("CI lower")
+
+data_weighted_effect_sizes %>%
+  mutate(r_recalculated_weighted_mean_adjusted = r_recalculated_weighted_mean - (r_recalculated_weighted_mean*(1-r_recalculated_weighted_mean^2)) / (2*(n_forest_plot-3))) %>%
+  escalc(measure = "ZCOR",
+         ri = r_recalculated_weighted_mean_adjusted,
+         ni = n_forest_plot,
+         data = .,
+         slab = article,
+         digits = 8) %>%
+  ggplot(aes(ci_lower_forest_plot, yi - vi*1.96)) +
+  geom_abline(slope = 1, linetype = "dotted") +
+  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
+  theme_classic() +
+  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
+  theme(legend.position = c(0.25, 0.85),
+        legend.title = element_blank(),
+        legend.box.background = element_rect(colour = "black")) +
+  xlim(-0.3, 0.8) +
+  ylim(-0.3, 0.8) +
+  xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
+  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials")
+
+```
+
+CORRISPONDANCE IS BETTER WITHOUT TRANSFORMATIONS. WHAT ARE THE IMPLICATIONS FOR DECODING WHAT VAHEY ACTUALLY REPORTED? IT SUGGESTS THAT WHAT HE REPORTS AS WEIGHTED MEANS IN HIS SUPPLEMENTARY 
+
 
 The weighted effect sizes reported in Vahey et al.'s forest plot could not be computationally reproduced from the individual effect sizes and degrees of freedom reported in their supplementary materials. 
 
