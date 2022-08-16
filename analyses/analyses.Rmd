@@ -22,9 +22,10 @@ knitr::opts_chunk$set(message = FALSE,
 
 # dependencies
 library(tidyverse)
+library(pwr)
 library(irr)
 library(metafor)
-library(pwr)
+library(janitor)
 library(knitr)
 library(kableExtra)
 
@@ -33,7 +34,7 @@ dir.create("plots")
 
 # function to round all numeric vars in a data frame
 round_df <- function(df, n_digits = 3) {
-  df %>% mutate_if(is.numeric, round, digits = n_digits)
+  df %>% mutate_if(is.numeric, janitor::round_half_up, digits = n_digits)
 }
 
 # apa format p value -----
@@ -54,59 +55,114 @@ add_heterogeneity_metrics_to_forest <- function(fit) {
 # notation off
 options(scipen = 999)
 
+# get data
+data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
+
 ```
 
-# Reproduction of Vahey et al (2015) 
+# Computational replication of Vahey et al (2015) 
 
 ## Power analyses
 
-Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54], 95% CR [.23, .67]. Using this effect size, they conducted a power analysis. They reported that, to detect a zero order correlation with 80% power, 29 participants were needed when using the ES or 37 if using the lower bound of the CI (following reccomendations by Perugini, Gallucci, & Costantini, 2014). I used the R package pwr to attempt to reproduce these values. 
+Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54], 95% CR [.23, .67]. Using this effect size, they conducted a power analysis. 
 
-- Minimum sample size using r = .45 = `r ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
-- Minimum sample size using lower CI r = .40 = `r ceiling(pwr.r.test(n = NULL, r = .40, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
-- The results of Vahey et al.'s power analyses could therefore be computationally reproduced. 
+- They reported that: "based on the current meta-effect [r = .40], a sample size of 29 participants would provide a study with a statistical power of .80 when examining the statistical significance of first-order Pearson's r correlations between clinically-focused IRAP effects and corresponding criterion variables" (p.63); and 
+- "Adopting a conservative approach in favour of controlling for overly optimistic publication biases, the most recent recommendation is to calculate sample size requirements not in terms of a given meta-effect, but rather in terms of the lower bound of its associated confidence interval (Perugini, Gallucci, & Costantini, 2014). Given that we obtained a confidence interval of (.40, .54) around the present meta-effect, Perugini et al.'s approach implies that a sample size of at least N = 37 would be required in order to achieve a statistical power of .80 when testing a continuous first-order correlation between a clinically-focused IRAP effect and a given criterion variable" (p.63).
+
+I used the R package pwr to attempt to reproduce these values. 
+
+- Minimum sample size using r = .45: `r ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed. 
+- Minimum sample size using lower CI r = .40: `r ceiling(pwr.r.test(n = NULL, r = .40, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
+- The results of Vahey et al.'s power analyses could therefore be computationally reproduced *if* one uses the more liberal one-tailed test, which was not specified by Vahey et al. 
 
 However, Vahey et al.'s analytic choices here could be questioned: One-tailed correlations tests with alpha = .05 are very uncommon when reporting the significance of correlations, and regression analyses require two-sided testing. A two-tailed test with alpha = .05 would more correspond far more closely to modal research practices. I therefore recomputed sample size estimates using these parameters: 
 
-- Minimum sample size using r = .45 = `r ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed. 
-- Minimum sample size using lower CI r = .40 = `r ceiling(pwr.r.test(n = NULL, r = .40, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed.
-- This suggested sample sizes are `r round(ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
+- Minimum sample size using r = .45: `r ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed. 
+- Minimum sample size using lower CI r = .40: `r ceiling(pwr.r.test(n = NULL, r = .40, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed.
+- This suggested sample sizes using more common assumptions are `r round(ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
+
+## Forest plot
+
+### From data in forest plot
+
+```{r}
+
+data_vahey_forest <- data_vahey %>%
+  drop_na() %>%
+  select(article_abbreviated = article_abbreviated,
+         n = n_forest_plot,
+         r = mean_r_forest_plot_numeric,
+         ci_lower = ci_lower_forest_plot_numeric,
+         ci_upper = ci_upper_forest_plot_numeric) %>%
+  mutate(color = "color1") %>%
+  bind_rows(tibble(article_abbreviated = "Meta",
+                   n = 75,
+                   r = .45,
+                   ci_lower = .23,
+                   ci_upper = .67,
+                   color = "color2")) %>%
+  mutate(proportionate_size = n/sum(n),
+         article_abbreviated = fct_relevel(article_abbreviated,
+                                           "Carpenter et al. (2012)", 
+                                           "Dawson et al. (2009)", 
+                                           "Hooper et al, (2010)", 
+                                           "Hussey & Barnes-Holmes (2012)", 
+                                           "Kishita et al. (2014)", 
+                                           "Kosnes et al. (2013)", 
+                                           "Nicholson & Barnes-Holmes (2012a)", 
+                                           "Nicholson & Barnes-Holmes (2012b)", 
+                                           "Nicholson, Dempsey et al. (2013)", 
+                                           "Nicholson, McCourt et al. (2013)", 
+                                           "Parling et al. (2011)", 
+                                           "Remue et al. (2013)", 
+                                           "Timko et al. (2010, Study 1)", 
+                                           "Vahey et al. (2009)", 
+                                           "Vahey et al. (2010)",
+                                           "Meta"))
+
+ggplot(data_vahey_forest, aes(x = r, y = fct_rev(article_abbreviated))) +
+  geom_point(aes(size = proportionate_size, color = color), shape = 15) +
+  geom_linerange(aes(xmin = ci_lower, xmax = ci_upper, color = color)) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = c(-.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1)) +
+  coord_cartesian(xlim = c(-.3, 1)) +
+  xlab(expression(italic(r))) +
+  ylab("") +
+  theme(legend.position = "none") +
+  scale_color_manual(values = c("color1" = "black", "color2" = "darkgreen"))
+
+```
+
+### From meta analysis
+
+```{r}
+
+
+
+```
 
 ## Meta-analytic effect size 
 
-The power analyses relied on the accuracy of the meta-analytic effect size. So, I then attempted to computationally reproduce the meta-analytic effect size from the effect sizes, confidence intervals and sample sizes reported in Vahey et al.'s forest plot and their description of their meta-analytic method in their manuscript. I also asked Vahey via email for additional details of their method and their analysis scripts, but but he declined to share them.
+The power analyses relied on the accuracy of the meta-analytic effect size. So, I then attempted to computationally reproduce the meta-analytic effect size from the effect sizes, confidence intervals, credibility intervals, and sample sizes reported in Vahey et al.'s forest plot and their description of their meta-analytic method in their manuscript. 
 
 Information about implementation of Hunter & Schmidt-style meta-analysis in metafor from [here](http://www.metafor-project.org/doku.php/tips:hunter_schmidt_method).
 
-Vahey et al. (2015) do not mention applying any transformations to their data. However, they cited using code by Field & Gillett (2010) to implement their analyses. Inspection of this code reveals two transformations were applied: Overton's (1998, page 358) correction ($r_{adjusted} = r - (r*(1-r^2)) / (2*(n-3))$) and Fisher's r-to-z correction. This would explain why Vahey et al.'s (2015) confidence intervals are asymmetric in their forest plot.  
+Vahey et al. (2015) do not report applying any transformations to their data. However, Vahey et al.'s (2015) individual effect sizes in their forest plot have asymmetric confidence intervals. This implies that a transformation was performed. 
 
-Reverse engineering the forest plot:
+### Without back transformations
 
-- effect sizes are weighted means, not transformed with either transformation
-- their CIs however are likely the transformed CIs as they are asymmetrical - check using same method as ES?
-- the meta ES is more likely to be the transformed ES without back-transformation. that would make the CIs congruent with Vahey et al, and the effect size only slightly different. It is hard to know.
-  - Either the numerical result is approximately reproducible but Vahey mislabelled it, and therefore misconducted the power analyses; or the numerical result is not reproducible.
-- either way, vahey does not explicitly state that they used fischers r to z transformations (although they make some reference to the method in plots), and they make no reference to an Overton transformation, although it is implemented in the code provided by Field & Gillett's (2010) which Vahey reported they used. This cannot be verfied directly as Vahey declined to share his code with me. 
+```{r}
 
-Smaller issues:
-
-- the forest plot employs the diamond shape to represent the CR intervals where it typically illustrates the CIs. 
-- CR in the forest plot is labeled as CI, but elsewhere in text this numerical width is referred to as the CR.
-
-```{r fig.height=5.5, fig.width=8}
-
-data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
-
-# wrangle
-data_vahey_forest_plot <- data_vahey %>%
-  select(article = article_abbreviated, 
-         yi = mean_r_forest_plot_numeric, 
-         ni = n_forest_plot,
-         ci_lower = ci_lower_forest_plot_numeric, 
-         ci_upper = ci_upper_forest_plot_numeric) %>%
-  na.omit() %>%
-  # convert CIs to variance
-  mutate(vi = ((ci_upper - ci_lower)/(1.96*2))^2)
+# calculate variances
+data_vahey_forest_recalculated_variance <- 
+  escalc(measure = "COR", 
+         ri      = mean_r_forest_plot_numeric, 
+         ni      = n_forest_plot, 
+         data    = data_vahey, 
+         vtype   = "AV") %>%
+  drop_na() %>%
+  select(article, article_abbreviated,
+         yi, vi, ni = n_forest_plot)
 
 # fit model
 fit_reproduced <- 
@@ -114,17 +170,110 @@ fit_reproduced <-
       vi      = vi, 
       weights = ni,   # Hunter Schmidt method requires weighting by N
       method  = "HS",  # Hunter Schmidt method
-      data    = data_vahey_forest_plot,
-      slab    = article)
+      data    = data_vahey_forest_recalculated_variance,
+      slab    = article_abbreviated)
 
-# save to disk for pdf plots
-write_rds(fit_reproduced, "models/fit_reproduced.rds")
+# plot
+## default forest
+metafor::forest(fit_reproduced,
+                xlab = "Pearson's r correlations",
+                refline = 0,
+                addcred = TRUE,
+                mlab = add_heterogeneity_metrics_to_forest(fit_reproduced),
+                xlim = c(-.75, 1.25),
+                at = c(-.25, 0, .25, .5, .75, 1))
+text(-.75, 17, "Reproduced from effect sizes in Vahey et al.'s forest plot", pos = 4)
+text(1.25, 16.85, substitute(paste(italic('r'), " 95% CI")), pos = 2)
+
+# ggplot default
+data_temp <- data_vahey_forest_recalculated_variance %>%
+  mutate(xmin = yi - sqrt(vi)*1.96,
+         xmax = yi + sqrt(vi)*1.96,
+         proportionate_size = vi)
+
+ggplot(data_temp, aes(x = yi, y = fct_rev(article_abbreviated))) +
+  geom_point(aes(size = proportionate_size), shape = 15) +
+  geom_linerange(aes(xmin = xmin, xmax = xmax)) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = c(-.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1)) +
+  coord_cartesian(xlim = c(-.3, 1)) +
+  xlab(expression(italic(r))) +
+  ylab("") +
+  theme(legend.position = "none") 
+
+# attempt to reproduce values
+data_temp2 <- data_vahey_forest_recalculated_variance %>%
+  mutate(xmin = transf.ztor(yi - sqrt(vi)*2.5),
+         xmax = transf.ztor(yi + sqrt(vi)*2.5),
+         proportionate_size = vi)
+
+ggplot(data_temp2, aes(x = yi, y = fct_rev(article_abbreviated))) +
+  geom_point(aes(size = proportionate_size), shape = 15) +
+  geom_linerange(aes(xmin = xmin, xmax = xmax)) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = c(-.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9, 1)) +
+  coord_cartesian(xlim = c(-.3, 1)) +
+  xlab(expression(italic(r))) +
+  ylab("") +
+  theme(legend.position = "none")
+  #scale_color_manual(values = c("color1" = "black", "color2" = "darkgreen"))
 
 ```
 
-### With back transformations
 
 ```{r}
+
+library(forestploter)
+
+tm <- forest_theme(base_size = 10,
+                   # Confidence interval point shape, line type/color/width
+                   ci_pch = 16,
+                   ci_col = "#762a83",
+                   ci_lty = 1,
+                   ci_lwd = 1.5,
+                   ci_Theight = 0.2, # Set an T end at the end of CI 
+                   # Reference line width/type/color
+                   refline_lwd = 1,
+                   refline_lty = "dashed",
+                   refline_col = "grey20",
+                   # Vertical line width/type/color
+                   vertline_lwd = 1,
+                   vertline_lty = "dashed",
+                   vertline_col = "grey20",
+                   # Change summary color for filling and borders
+                   summary_fill = "#4575b4",
+                   summary_col = "#4575b4",
+                   # Footnote font size/face/color
+                   footnote_cex = 0.6,
+                   footnote_fontface = "italic",
+                   footnote_col = "blue")
+
+data_vahey_forest_reshaped <- data_vahey_forest %>%
+  mutate(` ` = paste(rep(" ", 30), collapse = " ")) %>%
+  select(article_abbreviated, ` `, r, `Lower 95% interval` = ci_lower, `Upper 95% interval` = ci_upper, n) %>%
+  round_df(2)
+
+p <- 
+  forestploter::forest(data_vahey_forest_reshaped,
+                       est   = data_vahey_forest$r,
+                       lower = data_vahey_forest$`Lower 95% interval`, 
+                       upper = data_vahey_forest$`Upper 95% interval`,
+                       sizes = 1/data_vahey_forest$proportionate_size,
+                       is_summary = c(rep(FALSE, nrow(data_vahey_forest)-1), TRUE),
+                       ci_column = 2,
+                       ref_line = 0)
+                     #arrow_lab = c("Placebo Better", "Treatment Better"),
+                     #xlim = c(0, 4),
+                     #ticks_at = c(0.5, 1, 2, 3),)
+
+plot(p)
+
+```
+
+```{r}
+
+# # save to disk for pdf plots
+# write_rds(fit_reproduced, "models/fit_reproduced.rds")
 
 # make predictions 
 predictions_reproduced <-
@@ -135,16 +284,174 @@ predictions_reproduced <-
                                    "pred" = "Meta r",
                                    "ci.lb" = "95% CI lower",
                                    "ci.ub" = "95% CI upper",
-                                   "cr.lb" = "95% CR lower",
-                                   "cr.ub" = "95% CR upper")) %>%
+                                   "pi.lb" = "95% CR lower",
+                                   "pi.ub" = "95% CR upper")) %>%
+  filter(parameter != "se") %>%
+  round_df(2)
+
+
+
+# summarize results
+meta_effect_reproduced <- 
+  paste0("k = ", fit_reproduced$k, 
+         ", Z = ", predictions_reproduced$estimate[1],
+         ", 95% CI [", predictions_reproduced$estimate[2], ", ", predictions_reproduced$estimate[3], "]", 
+         ", 95% CR [", predictions_reproduced$estimate[4], ", ", predictions_reproduced$estimate[5], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_reproduced$zval)), digits = 1))  # exact p value from z score
+
+meta_heterogeneity_reproduced <- 
+  paste0("Q(df = ", fit_reproduced$k - 1, ") = ", round(fit_reproduced$QE, 2), 
+         ", p ",       apa_p_value(fit_reproduced$QEp),
+         ", tau^2 = ", round(fit_reproduced$tau2, 2), 
+         ", I^2 = ",   round(fit_reproduced$I2, 2),
+         ", H^2 = ",   round(fit_reproduced$H2, 2))
+
+meta_effect_reproduced
+
+```
+
+Meta effect: `r meta_effect_reproduced`.
+
+Heterogeneity: `r meta_heterogeneity_reproduced`.
+
+- Minimum sample size using r = `r round(transf.ztor(.45), 2)` = `r ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
+- Minimum sample size using lower CI r = .40 = `r ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.40), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
+- The results of Vahey et al.'s power analyses could therefore be computationally reproduced. 
+- This suggested sample sizes are `r round(ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
+
+### With prior back transformations
+
+```{r}
+
+# calculate variances
+data_vahey_forest_plot <- 
+  escalc(measure = "COR", 
+         ri      = mean_r_forest_plot_numeric, 
+         ni      = n_forest_plot, 
+         data    = data_vahey, 
+         vtype   = "AV") %>%
+  drop_na() %>%
+  select(article, article_abbreviated,
+         yi, vi, ni = n_forest_plot)
+
+# fit model
+fit_reproduced <- 
+  rma(yi      = yi, 
+      vi      = vi, 
+      weights = ni,   # Hunter Schmidt method requires weighting by N
+      method  = "HS",  # Hunter Schmidt method
+      data    = data_vahey_forest_plot,
+      slab    = article_abbreviated)
+
+# make predictions 
+predictions_reproduced <-
+  predict(fit_reproduced, digits = 5) %>%
+  as.data.frame() %>%
+  gather(parameter, estimate) %>%
+  mutate(parameter = dplyr::recode(parameter,
+                                   "pred" = "Meta r",
+                                   "ci.lb" = "95% CI lower",
+                                   "ci.ub" = "95% CI upper",
+                                   "pi.lb" = "95% CR lower",
+                                   "pi.ub" = "95% CR upper")) %>%
   filter(parameter != "se") %>%
   # undo the r to z transformation that was likely applied by Field & Gillett's (2010) scripts
-  mutate(estimate = transf.ztor(estimate)) %>%
+  #mutate(estimate = transf.ztor(estimate)) %>%
   round_df(2)
 
 # plot
 metafor::forest(fit_reproduced,
                 transf  = transf.ztor,
+                xlab = substitute(paste("Pearson's ", italic('r'))),
+                refline = 0,
+                addcred = TRUE,
+                mlab = add_heterogeneity_metrics_to_forest(fit_reproduced),
+                xlim = c(-.75, 1.25),
+                at = c(-.25, 0, .25, .5, .75, 1))
+text(-.75, 17, "Reproduced from effect sizes in Vahey et al.'s forest plot", pos = 4)
+text(1.25, 16.85, substitute(paste(italic('r'), " [95% CI]")), pos = 2)
+
+ggplot(data_vahey_forest_plot) +
+  geom_point(aes(x = yi, y = fct_rev(article_abbreviated))) +
+  geom_linerange(aes(x = yi, y = fct_rev(article_abbreviated),
+                     xmin = yi - sqrt(vi)*1.96, xmax = yi + sqrt(vi)*1.96)) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  scale_x_continuous(breaks = c(-.3, -.2, -.1, 0, .1, .2, .3, .4, .5, .6, .7, .8, .9),
+                     limits = c(-.3, .9))
+
+
+
+```
+
+```{r}
+
+# summarize results
+meta_effect_reproduced <- 
+  paste0("k = ", fit_reproduced$k, 
+         ", r = ", predictions_reproduced$estimate[1],
+         ", 95% CI [", predictions_reproduced$estimate[2], ", ", predictions_reproduced$estimate[3], "]", 
+         ", 95% CR [", predictions_reproduced$estimate[4], ", ", predictions_reproduced$estimate[5], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_reproduced$zval)), digits = 1))  # exact p value from z score
+
+meta_heterogeneity_reproduced <- 
+  paste0("Q(df = ", fit_reproduced$k - 1, ") = ", round(fit_reproduced$QE, 2), 
+         ", p ",       apa_p_value(fit_reproduced$QEp),
+         ", tau^2 = ", round(fit_reproduced$tau2, 2), 
+         ", I^2 = ",   round(fit_reproduced$I2, 2),
+         ", H^2 = ",   round(fit_reproduced$H2, 2))
+
+```
+
+Meta effect: `r meta_effect_reproduced`.
+
+Heterogeneity: `r meta_heterogeneity_reproduced`.
+
+
+### With prior back transformations
+
+```{r}
+
+# calculate variances
+data_vahey_forest_plot <- 
+  escalc(measure = "COR", 
+         ri      = transf.ztor(mean_r_forest_plot_numeric), 
+         ni      = n_forest_plot, 
+         data    = data_vahey, 
+         vtype   = "AV") %>%
+  drop_na() %>%
+  select(article, article_abbreviated,
+         yi, vi, ni = n_forest_plot)
+
+# fit model
+fit_reproduced <- 
+  rma(yi      = yi, 
+      vi      = vi, 
+      weights = ni,   # Hunter Schmidt method requires weighting by N
+      method  = "HS",  # Hunter Schmidt method
+      data    = data_vahey_forest_plot,
+      slab    = article_abbreviated)
+
+# make predictions 
+predictions_reproduced <-
+  predict(fit_reproduced, digits = 5) %>%
+  as.data.frame() %>%
+  gather(parameter, estimate) %>%
+  mutate(parameter = dplyr::recode(parameter,
+                                   "pred" = "Meta r",
+                                   "ci.lb" = "95% CI lower",
+                                   "ci.ub" = "95% CI upper",
+                                   "pi.lb" = "95% CR lower",
+                                   "pi.ub" = "95% CR upper")) %>%
+  filter(parameter != "se") %>%
+  # undo the r to z transformation that was likely applied by Field & Gillett's (2010) scripts
+  mutate(estimate = transf.ztor(estimate)) %>%
+  round_df(2)
+
+predictions_reproduced
+
+# plot
+metafor::forest(fit_reproduced,
+                #transf  = transf.ztor,
                 xlab = substitute(paste("Pearson's ", italic('r'))),
                 refline = 0,
                 addcred = TRUE,
@@ -175,63 +482,7 @@ Meta effect: `r meta_effect_reproduced`.
 
 Heterogeneity: `r meta_heterogeneity_reproduced`.
 
-### Without back transformations
 
-```{R}
-
-# make predictions 
-predictions_reproduced <-
-  predict(fit_reproduced, digits = 5) %>%
-  as.data.frame() %>%
-  gather(parameter, estimate) %>%
-  mutate(parameter = dplyr::recode(parameter,
-                                   "pred" = "Meta r",
-                                   "ci.lb" = "95% CI lower",
-                                   "ci.ub" = "95% CI upper",
-                                   "cr.lb" = "95% CR lower",
-                                   "cr.ub" = "95% CR upper")) %>%
-  filter(parameter != "se") %>%
-  # undo the r to z transformation that was likely applied by Field & Gillett's (2010) scripts
-  round_df(2)
-
-# plot
-metafor::forest(fit_reproduced,
-                xlab = "Z scores",
-                refline = 0,
-                addcred = TRUE,
-                mlab = add_heterogeneity_metrics_to_forest(fit_reproduced),
-                xlim = c(-.75, 1.25),
-                at = c(-.25, 0, .25, .5, .75, 1))
-text(-.75, 17, "Reproduced from effect sizes in Vahey et al.'s forest plot", pos = 4)
-text(1.25, 16.85, substitute(paste(italic('Z'), " [95% CI]")), pos = 2)
-
-# summarize results
-meta_effect_reproduced <- 
-  paste0("k = ", fit_reproduced$k, 
-         ", Z = ", predictions_reproduced$estimate[1],
-         ", 95% CI [", predictions_reproduced$estimate[2], ", ", predictions_reproduced$estimate[3], "]", 
-         ", 95% CR [", predictions_reproduced$estimate[4], ", ", predictions_reproduced$estimate[5], "]",
-         ", p = ", signif(2*pnorm(-abs(fit_reproduced$zval)), digits = 1))  # exact p value from z score
-
-meta_heterogeneity_reproduced <- 
-  paste0("Q(df = ", fit_reproduced$k - 1, ") = ", round(fit_reproduced$QE, 2), 
-         ", p ",       apa_p_value(fit_reproduced$QEp),
-         ", tau^2 = ", round(fit_reproduced$tau2, 2), 
-         ", I^2 = ",   round(fit_reproduced$I2, 2),
-         ", H^2 = ",   round(fit_reproduced$H2, 2))
-
-round(transf.ztor(fit_reproduced$b), 2)
-
-```
-
-Meta effect: `r meta_effect_reproduced`.
-
-Heterogeneity: `r meta_heterogeneity_reproduced`.
-
-- Minimum sample size using r = `r round(transf.ztor(.45), 2)` = `r ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
-- Minimum sample size using lower CI r = .40 = `r ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.40), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, one-tailed.
-- The results of Vahey et al.'s power analyses could therefore be computationally reproduced. 
-- This suggested sample sizes are `r round(ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = round(transf.ztor(.45), 2), sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
 
 ## Assessment of bias
 
@@ -604,8 +855,8 @@ predictions_new <-
                                    "pred" = "Meta analysed r",
                                    "ci.lb" = "95% CI lower",
                                    "ci.ub" = "95% CI upper",
-                                   "cr.lb" = "95% CR lower",
-                                   "cr.ub" = "95% CR upper")) %>%
+                                   "pi.lb" = "95% CR lower",
+                                   "pi.ub" = "95% CR upper")) %>%
   filter(parameter != "se") %>%
   mutate(estimate = transf.ztor(estimate)) %>%
   round_df(2)
