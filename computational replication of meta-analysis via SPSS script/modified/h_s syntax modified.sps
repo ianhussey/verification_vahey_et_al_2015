@@ -1,53 +1,41 @@
+* Encoding: UTF-8.
 *******************************************************************.
 *  Original Syntax from:
-  *  
-  * Field, A. & Gillett, R. (2010).   "How To Do Meta-Analysis".
+*
+* Field, A. & Gillett, R. (2010).   "How To Do Meta-Analysis".
 *   British Journal of Mathematical and Statistical Psychology.
 
 * Additional Material by:
-  * 
-  * Maja Osolnik, I/O Psychology Graduate Student
+*
+* Maja Osolnik, I/O Psychology Graduate Student
 * Saint Cloud State University 2011 (osma0904@stcloudstate.edu)
 
-*******************************************************************.
-
-
-*renaming the variable.
-rename variables SampleSIZE=n.
-rename variables Fake_PozRel = rx.
-rename variables EE_Reliability = ry.
-rename variables R_EE_FakePoz=rxy.
-
-*selecting only studies that included the correlation of interest. 
-recode rxy (sysmiss=999).
-select if (rxy ne 999).
-execute.
 
 *frequencies - if any of the studies did not provide a reliability estimate.
 freq rx ry rxy.
 
-*descriptives - to obtain the mean reliability estimate for the measures that had a missing reliability, and replace the missing 
+*descriptives - to obtain the mean reliability estimate for the measures that had a missing reliability, and replace the missing
 value with the mean in the get matrix subcommand.
 des rx ry.
 
 *even though missing values can be replaced by this comand: RMV /EE_Reliability_1=SMEAN(EE_Reliability),
-it might be good to know exactly how many studeies had missing data on reliabilies.
+ it might be good to know exactly how many studeies had missing data on reliabilies.
 
 set printback=none.
 dataset name original.
-cd  "%HOMEDRIVE%%HOMEPATH%\Documents\Meta-Analysis".
+cd  "C:\Users\Hellson\Downloads".
 matrix.
 * input variables.
 get rxy /variables = rxy .
 get n /variables = n.
 GET rx /variables = rx
-/missing=accept
-/sysmiss=.78.
+ /missing=accept
+ /sysmiss=.78.
 get ry /variables = ry
-/missing=accept
-/sysmiss=.88.
+ /missing=accept
+ /sysmiss=.88.
 
-*sysmiss =input the mean value of the reliability estimate - replaces all missing values with the mean. 
+*sysmiss =input the mean value of the reliability estimate - replaces all missing values with the mean.
 
 *computing the number of studies.
 compute k = nrow(rxy).
@@ -110,11 +98,11 @@ do if (clvar >=0).
 *sd of corr correl (artifacts removed).
 compute sdcoco=sqrt(clvar).
 
-*compute credibility intervals. *80% = 1.28. 
+*compute credibility intervals. *95% = 1.96. 
 *credibility intervals use SD, confidence intervals use SE.
 
-compute novcrl = cocorr  - 1.28*sdcoco.
-compute novcrh = cocorr  + 1.28*sdcoco.
+compute novcrl = cocorr  - 1.96*sdcoco.
+compute novcrh = cocorr  + 1.96*sdcoco.
 
 *compute variance accounted for by artifacts.
 compute pervar=(avcose/varccor)*100.
@@ -145,7 +133,7 @@ print varccor /format=f9.4 /title = "Observed variance of corrected correlations
 print avcose /format=f9.4 /title = "Variance in correlations attributable to all artifacts (SE & unreliability)".
 print clvar /format=f9.4 /title = "Variance of true score correlations (total-arifacts)".
 print sdcoco /format=f9.4 /title = "SD with variance due to sampling error and other artifacts (unreliability) removed from the estimate of SD (sqrt of var. of corcorr)".
-print novcrl /format=f9.4 /title = "Lower endpoint of corrected correlation Credibility Interval 80 %".
-print novcrh /format=f9.4 /title = "Higher endpoint of corrected correlation  Credibility Interval 80%".
+print novcrl /format=f9.4 /title = "Lower endpoint of corrected correlation Credibility Interval 95 %".
+print novcrh /format=f9.4 /title = "Higher endpoint of corrected correlation  Credibility Interval 95%".
 print pervar /format=f9.4 /title = "% variance of population/corrected correlations attributable to all artifacts".
 end matrix.
