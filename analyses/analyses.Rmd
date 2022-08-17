@@ -13,7 +13,8 @@ output:
 
 # TODO
 
-use field's equations to calculate a CR interval as they describe it
+*REINCLUDE SELF ESTEEM VAHEY STUDY*? check clinical exclusions
+
 
 ```{r, include=FALSE}
 
@@ -49,6 +50,14 @@ apa_p_value <- function(p){
                         ifelse(p < 0.001, "< .001", NA))
   p_formatted <- gsub(pattern = "0.", replacement = ".", x = p_formatted, fixed = TRUE)
   p_formatted
+}
+
+# meta results string
+meta_effect_string <- function(fit, predictions){
+  paste0("k = ", fit$k, ", r = ", predictions$pred,
+         ", 95% CI [", predictions$ci.lb, ", ", predictions$ci.ub, "]",
+         ", 95% CR [", predictions$pi.lb, ", ", predictions$pi.ub, "]",
+         ", p = ", signif(2*pnorm(-abs(fit$zval)), digits = 1))  # exact p value from z score
 }
 
 # heterogeneity strings
@@ -90,7 +99,9 @@ data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
 
 # Computational replication of original analylses
 
-## Power analyses from meta analytic effect sizes reported in forest plot and text
+## Power analyses 
+
+Calculated from meta analytic effect sizes reported in forest plot and text.
 
 Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54], 95% CR [.23, .67]. Using this effect size, they conducted a power analysis. 
 
@@ -109,7 +120,9 @@ However, Vahey et al.'s analytic choices here could be questioned: One-tailed co
 - Minimum sample size using lower CI r = .40: `r ceiling(pwr.r.test(n = NULL, r = .40, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed.
 - This suggested sample sizes using more common assumptions are `r round_half_up(ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
 
-## Meta-analytic effect size and intervals from weighted average effect sizes reported in forest plot
+## Meta-analytic effect size and intervals 
+
+Calculated from weighted average effect sizes reported in forest plot.
 
 The power analyses relied on the accuracy of the meta-analytic effect size. So, I then attempted to computationally reproduce the meta-analytic effect size from the effect sizes, confidence intervals, credibility intervals, and sample sizes reported in Vahey et al.'s forest plot and their description of their meta-analytic method in their manuscript. 
 
@@ -127,14 +140,18 @@ Summary of results:
 
 ```{r}
 
-tibble(
-  analysis = c("k studies", "Total N", "Effect size r", "CI lower", "CI upper", "CR lower", "CR upper"),
-  vahey = c(15, 494, .45, .40, .54, .23, .67),
-  reanalysis = c(15, 494, .4670, .1955, .7392, .4674, .4674)
-)  %>%
-  round_df(2) %>%
-  mutate(diff = reanalysis - vahey,
-         congruence = reanalysis == vahey) %>%
+results_spss <- tibble(
+  k_studies = c(15, 15),
+  total_n = c(494, 494),
+  pred = c(.45, .4670), 
+  ci.lb = c(.40, .1955),
+  ci.ub = c(.54, .7392),
+  pi.lb = c(.23, .4674),
+  pi.ub = c(.67, .4674)
+)%>%
+  round_df(2) 
+
+results_spss %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
@@ -182,10 +199,13 @@ predictions_reproduced <-
   as.data.frame() %>%
   select(-se) 
 
-predictions_reproduced %>%
-  round_df(2) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+predictions_reproduced_printing <- predictions_reproduced %>%
+  round_df(2)
+
+# predictions_reproduced %>%
+#   round_df(2) %>%
+#   kable() %>%
+#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
 # plot
 data_forest <- data_recalculated_variance %>%
@@ -253,6 +273,8 @@ ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method.pdf",
 
 ```
 
+Meta effect: `r meta_effect_string(fit_reproduced, predictions_reproduced_printing)`.
+
 - Individual estimates *are* the same as Vahey et al.'s forest plot.
 - Individual estimates' confidence intervals *are not* the same as Vahey et al.'s forest plot.
 - Meta estimate *is not* the same as Vahey et al.'s forest plot.
@@ -292,11 +314,9 @@ predictions_reproduced_transformed <-
   as.data.frame() %>%
   select(-se)
 
-predictions_reproduced_transformed %>%
+predictions_reproduced_transformed_backtransformed <- predictions_reproduced_transformed %>%
   mutate_all(transf.ztor) %>%
-  round_df(2) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  round_df(2)
 
 # plot
 data_forest_transformed <- data_recalculated_variance_transformed %>%
@@ -366,6 +386,8 @@ ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method with Fishe
 
 ```
 
+Meta effect: `r meta_effect_string(fit_reproduced_transformed, predictions_reproduced_transformed_backtransformed)`.
+
 - Individual estimates *are* the same as Vahey et al.'s forest plot.
 - Individual estimates' confidence intervals *are* the same as Vahey et al.'s forest plot.
 - Meta estimate *is not* the same as Vahey et al.'s forest plot.
@@ -373,6 +395,24 @@ ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method with Fishe
 - Meta credibility/prediction intervals *are not* the same as Vahey et al.'s credibility intervals in their forest plot.
 
 ### Summary
+
+```{r}
+
+bind_rows(
+  results_spss %>% select(-k_studies, -total_n),
+  predictions_reproduced_printing,
+  predictions_reproduced_transformed_backtransformed
+) %>%
+  rownames_to_column(var = "analysis") %>%
+  mutate(analysis = case_when(analysis == "...1" ~ "Vahey et al.",
+                              analysis == "...2" ~ "Attempted computational reproduction: Field & Gillett's implementation of Hunter & Schmidt",
+                              analysis == "...3" ~ "Attempted computational reproduction: Vichtbauer's implementation of Hunter & Schmidt",
+                              analysis == "...4" ~ "Attempted computational reproduction: Vichtbauer's implementation of Hunter & Schmidt + Fisher's r-to-z transformations")) %>%
+  rename(estimate = pred, ci_lower = ci.lb, ci_upper = ci.ub, cr_lower = pi.lb, cr_upper = pi.ub) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+```
 
 I report three attempts to reproduce Vahey et al.'s results using (a) Field & Gillett's (2010) SPSS script for a Hunter & Schmidt style meta-analysis, which Vahey referred me to use to reproduce their results, (b) a close implementation of the same Hunter & Schmidt style meta-analysis in R using the well-established metafor package, and (c) the same Hunter& Schmidt meta-analysis in r/metafor adding the transformations Field & Gillett recommended for a different analytic strategy (i.e., Hedges' and colleagues use of Fisher's r-to-z transformations).
 
@@ -386,7 +426,9 @@ Only the analysis that included Fishers' r-to-z transformations can account for 
 
 No implementation produced similar credibility intervals to Vahey et al.
 
-## Weighted-average effect sizes reported in forest plot from individual effect sizes in supplementary materials
+## Average effect sizes 
+
+Reported in forest plot, calculated from individual effect sizes in supplementary materials.
 
 Next, I attempted to reproduce the weighted-mean effect sizes reported in Vahey et al.'s forest plot from the individual effect sizes they reported in their supplementary materials. 
 
@@ -406,7 +448,7 @@ data_weighted_effect_sizes <- data_vahey %>%
   ungroup() %>%
   mutate(r_weighted_by_df = r_supplementary*(df_supplementary/mean_df)) %>%
   group_by(article) %>%
-  summarize(r_recalculated_weighted_mean = mean(r_weighted_by_df)) %>%
+  summarize(r_recalculated_weighted_mean = round_half_up(mean(r_weighted_by_df), 2)) %>%
   left_join(data_vahey %>% 
               select(article = article_abbreviated, 
                      mean_r_forest_plot_numeric) %>%
@@ -414,24 +456,36 @@ data_weighted_effect_sizes <- data_vahey %>%
             by = "article") %>%
   mutate(congruence = ifelse(janitor::round_half_up(r_recalculated_weighted_mean, 2) == 
                                janitor::round_half_up(mean_r_forest_plot_numeric, 2), "Congruent", "Incongruent"),
-         congruence = fct_relevel(congruence, "Incongruent", "Congruent"),
+         congruence = fct_relevel(congruence, "Congruent", "Incongruent"),
          difference = r_recalculated_weighted_mean - mean_r_forest_plot_numeric)
 
 # plot
-ggplot(data_weighted_effect_sizes, aes(mean_r_forest_plot_numeric, r_recalculated_weighted_mean)) +
+p_comparison_reaveraged <- 
+  ggplot(data_weighted_effect_sizes, aes(mean_r_forest_plot_numeric, r_recalculated_weighted_mean)) +
   geom_abline(slope = 1, linetype = "dotted") +
-  geom_point(size = 2.25) +
+  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
   theme_classic() +
   scale_color_viridis_d(begin = 0.25, end = 0.75) + 
-  theme(legend.position = c(0.25, 0.85),
-        legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black")) +
+  theme(legend.position = "top", # c(0.25, 0.85),
+        legend.title = element_blank()) + 
+        #legend.box.background = element_rect(colour = "black")) +
   xlim(0.35, 0.75) +
   ylim(0.35, 0.75) +
   xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
-  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials")
+  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials") +
+  annotate("text", x = .66, y = .45, size = 3, label = "Overestimates validity") +
+  annotate("text", x = .45, y = .66, size = 3, label = "Underestimates valdiity")
 
-# table
+p_comparison_reaveraged
+
+ggplot2::ggsave(filename = "plots/scatter plot comparing effect sizes in forest plot to reaveraged from supplementary materials.pdf", 
+                plot = p_comparison_reaveraged,
+                device = "pdf",
+                width = 4.5, 
+                height = 4.5, 
+                units = "in")
+
+ # table
 data_weighted_effect_sizes %>%
   summarize(n_incongruent = sum(ifelse(congruence == "Incongruent", TRUE, FALSE)),
             percent_incongruent = round_half_up(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
@@ -447,75 +501,27 @@ data_weighted_effect_sizes %>%
   
 ```
 
-```{r fig.height=4.5, fig.width=4.5}
-
-# plot
-data_weighted_effect_sizes %>%
-  escalc(measure = "COR",
-         ri = r_recalculated_weighted_mean,
-         ni = n_forest_plot,
-         data = .,
-         slab = article,
-         digits = 8) %>%
-  ggplot(aes(ci_lower_forest_plot, yi - vi*1.96)) +
-  geom_abline(slope = 1, linetype = "dotted") +
-  geom_point(size = 2.25) +
-  theme_classic() +
-  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
-  theme(legend.position = c(0.25, 0.85),
-        legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black")) +
-  xlim(-0.3, 0.7) +
-  ylim(-0.3, 0.7) +
-  xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
-  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials") +
-  ggtitle("CI lower")
-
-data_weighted_effect_sizes %>%
-  mutate(r_recalculated_weighted_mean_adjusted = r_recalculated_weighted_mean - (r_recalculated_weighted_mean*(1-r_recalculated_weighted_mean^2)) / (2*(n_forest_plot-3))) %>%
-  escalc(measure = "ZCOR",
-         ri = r_recalculated_weighted_mean_adjusted,
-         ni = n_forest_plot,
-         data = .,
-         slab = article,
-         digits = 8) %>%
-  ggplot(aes(ci_lower_forest_plot, yi - vi*1.96)) +
-  geom_abline(slope = 1, linetype = "dotted") +
-  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
-  theme_classic() +
-  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
-  theme(legend.position = c(0.25, 0.85),
-        legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black")) +
-  xlim(-0.3, 0.8) +
-  ylim(-0.3, 0.8) +
-  xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
-  ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials")
-
-```
-
-CORRISPONDANCE IS BETTER WITHOUT TRANSFORMATIONS. WHAT ARE THE IMPLICATIONS FOR DECODING WHAT VAHEY ACTUALLY REPORTED? IT SUGGESTS THAT WHAT HE REPORTS AS WEIGHTED MEANS IN HIS SUPPLEMENTARY 
-
-
 The weighted effect sizes reported in Vahey et al.'s forest plot could not be computationally reproduced from the individual effect sizes and degrees of freedom reported in their supplementary materials. 
 
 Many values were congruent, but a minority differed (k = 2 [13%]). Table includes those that differed.
 
-## Extraction and conversion of individual effect sizes 
+## Extraction and conversion of included individual effect sizes
 
-Only a subset of effect sizes were reextracted and reconverted to Pearson's r. This was for a variety of reasons (note that sometimes multiple reasons applied to a given effect size):
+Attempted to reextract the individual effect sizes listed in the supplementary materials and convert them to Pearson's *r*. 
+
+Note that only a subset were possible to reextract/convert, for the following reasons:
 
 - Vahey et al. appear to have treated the $\eta^2_p$ effect size reported in original papers as if it was equivalent to $\eta^2$, which it is not: (a) $\eta^2$ has a relatively simpler mathematical transformation to Pearson's r, which Vahey et al. appear to have applied to $\eta^2_p$, which is not possible to convert to Pearson's r due to the fact that it is a partial correlation (e.g., Hooper et al., 2010; Hussey & Barnes-Holmes, 2012).
-- In some cases, effect sizes reported in Vahey et al.'s supplementary materials did not refer to effect sizes that were reported in the original article (e.g., Timko et al., 2010; Study 1, correlation between overall D score	and DASS-total).
+- In some cases, effect sizes reported in Vahey et al.'s supplementary materials did not refer to effect sizes that were reported in the original article (e.g., Timko et al., 2010; Study 1, correlation between overall D score	and DASS-total). It is possible that these effects were obtained by contacting the original authors, but this is not reported in Vahey et al.
 - Some were not reported in sufficient detail in the original paper to allow for the calculation of an effect size, and contact with the original authors did not result in data/result being provided (e.g., Parling et al., 2012).
-- Vahey et al. included a large number of non-zero IRAP effects (i.e., a reaction time differential between block types) as effect sizes. However, it should be noted that the presence of an IRAP effect in isolation, without reference to an external criterion variable, by definition cannot provide evidence for the IRAP's (clinical) criterion validity. As such, these effects were not considered for reextraction and checking, given that (a) this extraction work was labor intensive, and (b) these effect sizes would not later be employed in the updated meta-analysis for the aforementioned reason.
-
-It is important to note that my goal here was not to account for the accuracy of every effect size, but to (a) demonstrate the difficulty of even assessing how effect sizes were extracted and calculated, and (b) illustrating that a number of errors have been made in the effect sizes it was possible to reextract and reconvert (agnostic to whether the ones I have not managed to extract and convert are correct or incorrect). That is, highlighting errors in the extraction and conversion of some effect sizes is sufficient to make the point that issues exist.
+- Non-criterion effects that referred only to the presence of an IRAP effect, but not the covariation between IRAP scores and an external variable, were not reextracted or converted. This was on the basis that this work is labor intensive, these effects do not meet the inclusion criteria, and therefore these effects would not be used in the subsequent new meta analysis. This point is discussed further below.  
 
 ```{r fig.height=4.5, fig.width=4.5}
 
+data_reextracted_and_annotated <- read.csv("../data/data_reextracted_and_annotated.csv")
+
 # get effect sizes
-data_individual_effect_sizes <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
+data_individual_effect_sizes <- data_reextracted_and_annotated %>%
   # consider only those effect sizes employed in vahey et al.'s meta-analysis
   filter(es_included_in_vahey_meta == TRUE) %>%
   # create an simplified effect size identifier
@@ -535,22 +541,34 @@ data_individual_effect_sizes %>%
 data_individual_effect_sizes_congruence <- data_individual_effect_sizes %>%
   na.omit() %>%
   mutate(congruence = ifelse(round_half_up(r_from_paper, 2) == round_half_up(r_vahey, 2), "Congruent", "Incongruent"),
-         congruence = fct_relevel(congruence, "Incongruent", "Congruent"),
+         congruence = fct_relevel(congruence, "Congruent", "Incongruent"),
          difference = round_half_up(r_from_paper - r_vahey, 2))
 
 # plot
-ggplot(data_individual_effect_sizes_congruence, aes(r_vahey, r_from_paper)) +
+p_comparison_reextracted <- 
+  ggplot(data_individual_effect_sizes_congruence, aes(r_vahey, r_from_paper)) +
   geom_abline(slope = 1, linetype = "dotted") +
   geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
   theme_classic() +
   scale_color_viridis_d(begin = 0.25, end = 0.75) + 
-  theme(legend.position = c(0.25, 0.85),
-        legend.title = element_blank(),
-        legend.box.background = element_rect(colour = "black")) +
+  theme(legend.position = "top", # c(0.25, 0.85),
+        legend.title = element_blank()) + 
+        #legend.box.background = element_rect(colour = "black")) +
   xlim(0, 0.7) +
   ylim(0, 0.7) +
   xlab("Reported in Vahey et al.'s (2015)\nsupplementary materials") +
-  ylab("Reextracted from original articles")
+  ylab("Reextracted from original articles\n") +
+  annotate("text", x = .54, y = .175, size = 3, label = "Overestimates validity") +
+  annotate("text", x = .175, y = .54, size = 3, label = "Underestimates valdiity")
+
+p_comparison_reextracted
+
+ggplot2::ggsave(filename = "plots/scatter plot comparing effect sizes in supplementary materials to reextracted effect sizes.pdf", 
+                plot = p_comparison_reextracted,
+                device = "pdf",
+                width = 4.5, 
+                height = 4.5, 
+                units = "in")
 
 # table
 data_individual_effect_sizes_congruence %>%
@@ -569,33 +587,38 @@ data_individual_effect_sizes_congruence %>%
 
 Table includes those that differed.
 
-## Critique of Vahey et al.'s inclusion and exclusion strategy 
+### Critique of Vahey et al.'s inclusions
 
-**[notes on narrative, some coding still needed?]**
+Vahey et al (2015) stated: "To be included within the current meta-analysis a given statistical effect must have described the co-variation of an IRAP effect with a corresponding clinically-focused criterion variable. To qualify as clinically-focused, the IRAP and criterion variables must have been deemed to target some aspect of a condition included in a major psychiatric diagnostic scheme such as the Diagnostic and Statistical Manual of Mental Disorders (DSM-5, 2013)."
 
-- how many ES were included by vahey, how many did they report considering?
-- how many did i find.
-- what were vahey's exclusion criteria?
-- how many could be excluded using criterion 1: non-clinically relevant?
-  - and, how many of vahey's could also be excluded as non-clinically relevant?
-  - i.e., evidence of inconsistent application of inclusion/exclusion criteria.
-- how many could be excluded using criterion 2: a priori predictable?
-  - criterion seems inherently problematic, strong risk of post hoc bias. no blinding.
-  - best I could do was re-rate all ES (only those scored as clinically relevant) for their predictability (rated by me and another researcher).
-  - evidence from our ratings that many effects may have been predictable. seems very subjective - highlighting this point is useful at least.
-  - evidence from Vahey et al.'s choices of what to include and not include seem less defensible however. Eg vahey et al 2009; comparisons between Nicholson et al. studies.
+Vahey et al.'s own inclusion criteria state that they would include, as evidence of criterion validity, effects that describe co-variation between IRAP scores and an external variable. However, many of their included effect sizes involve no external variable, only the presence of a non-zero IRAP effect at the group level. IRAP effects without reference to an external variable that cannot provide criterion validity, just as a group's mean score on a self-report cannot in isolation provide evidence for that measure's criterion validity.
 
-# Extended analyses
+Number and proportion of Vahey et al.'s 56 effect sizes from their supplementary materials that cannot provide evidence of criterion validity:
 
-## Meta-analysis including all effects meeting Vahey et al.'s own inclusion and exclusion criteria
+```{r}
 
-- In attempting to determine whether Vahey et al.'s extracted effect sizes were accurately done, I realized that they made many mistakes of extraction or conversion, but more importantly many questionable decisions about which effect sizes they elected to include (e.g., presence of IRAP effects without reference to an external variable) or exclude (many effects that would seem to meet the criterion of being clinically relevant, but which were smaller in magnitude). I therefore elected to conduct a new meta-analysis using all clinically-relevant extracted effect sizes. I excluded the following from the extracted effect sizes:
+data_reextracted_and_annotated %>%
+  filter(es_included_in_vahey_meta == TRUE) %>%
+  mutate(non_criterion_validity_effect = specific_criterion_variable_type == "IRAP effect significance from zero test") %>%
+  summarize(non_criterion_validity_effect_count = sum(non_criterion_validity_effect),
+            non_criterion_validity_effect_proportion = mean(non_criterion_validity_effect)) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
-- Mere IRAP effects without reference to an external variable that can provide criterion validity. By analogy, the fact that participants mean scores on on a self-report scale or a Stroop task tells us nothing about these measures' criterion validity, which is by definition assessed in relation to other external measures.  
-- Effect sizes derived from analyses that employed IRAP effects as the DV. The final conclusion of the article is that the IRAP shows promise as a tool for clinical assessment, i.e., that it can be used to predict group membership. Predicting the mean IRAP effect on the basis of known groups is of relatively little utility. Moreover, this analytic mistake of confusing the IV and DV when attempting to provide evidence for a task's validity has been well documented elsewhere as a threat to research findings (e.g., Fried et al REF).
-- Non-clinically relevant effects, using Vahey et al.'s definition (below) and scored by two independent raters, as in Vahey et al. I retained only effects that were rated by both raters as clinically relevant. 
+```
 
-From Vahey et al (2015): *"To be included within the current meta-analysis a given statistical effect must have described the co-variation of an IRAP effect with a corresponding clinically-focused criterion variable. To qualify as clinically-focused, the IRAP and criterion variables must have been deemed to target some aspect of a condition included in a major psychiatric diagnostic scheme such as the Diagnostic and Statistical Manual of Mental Disorders (DSM-5, 2013). ... The authors decided whether the responses measured by a given IRAP trial-type should co-vary with a specific criterion variable by consulting the relevant empirical literature. In the absence of such evidence, the authors strictly excluded even substantial statistical effects between IRAP effects and accompanying variables from the current meta-analysis."* Note that Vahey et al. did not provide citations of relevant literature that support the inclusion of any given effect.
+### Critique of Vahey et al.'s exclusions/omissions
+
+Evidence from Vahey et al.'s choices of what to include vs not is at times hard to defend. Eg vahey et al 2009; comparisons between Nicholson et al. studies.
+
+many effects that would seem to meet the criterion of being clinically relevant, but which were smaller in magnitude
+
+*EXPAND WITH EXAMPLES*
+
+
+## Comprehensive extraction of effect sizes
+
+Vahey et al. reported extracting 56 effect sizes prior to exclusions: "Collectively, these 15 articles yielded 56 statistical effects between various clinically focused IRAP effects and their respective criterion variables." (p.60)
 
 ```{r}
 
@@ -613,15 +636,17 @@ total_n <- data_reextracted %>%
 
 ```
 
-### Inter-rater reliability of inclusions
+I reextracted effect sizes from these same 15 articles and found `r nrow(data_reextracted)` effect sizes. 
 
-(i.e., of coding of effects as clinically relevant)
+## Application of exclusion criteria
 
-Vahey et al. do not report their rate of inter-rater reliability in the coding of effects as meeting inclusion/exclusion criteria.
+Vahey et al. reported 100% inter rater reliability for the scoring of the suitability of effect sizes for inclusion: "From the outset, there was no disagreement between the authors about what statistical effects should be excluded from the meta-analysis; and of the 56 statistical effects only 8 (i.e. 14%) were not initially cited by both authors for inclusion.” (p.60) 
 
-I considered only the articles from which Vahey et al. extracted from, i.e., `r nrow(filter(data_reextracted, es_included_in_vahey_meta == TRUE))` effect sizes taken from `r nrow(distinct(data_reextracted, article))` articles, from an original pool of 46 articles. They did not report which or how many effect sizes were excluded, or the complete list of the original pool of articles. 
+They do not provide information about the excluded 8 effect sizes. 
 
-My reextraction found at least `r nrow(data_reextracted)` effect sizes in these `r nrow(distinct(data_reextracted, article))` articles. After exclusions, `r nrow(filter(data_reextracted, clinically_relevant == TRUE & problematic_analysis == FALSE))` effect sizes remained for inclusion in the new meta-analysis.
+Vahey et al stated that "The authors decided whether the responses measured by a given IRAP trial-type should co-vary with a specific criterion variable by consulting the relevant empirical literature. In the absence of such evidence, the authors strictly excluded even substantial statistical effects between IRAP effects and accompanying variables from the current meta-analysis." Note however that Vahey et al. did not provide citations of relevant literature that support the inclusion of any given effect. As such, this high rate of agreement between Vahey & Nicholson does not necessarily imply that the inclusion and exclusion criteria would achieve the same level of agreement by others. 
+
+The comprehensively extracted effect sizes were rated by two independent reviewers.
 
 ```{r}
 
@@ -638,16 +663,20 @@ kappa2(data_raters, "unweighted")
 
 ```
 
-### New meta analysis
+After exclusions, `r nrow(filter(data_reextracted, clinically_relevant == TRUE & problematic_analysis == FALSE))` effect sizes remained for inclusion in the new meta-analysis, compared to Vahey et al.'s 56.
 
-Excluding non-clinically relevant and problematic
+# Extended analyses
 
-Details of the meta-analytic strategy, which used more up to date methods than Vahey et al.:
+## Meta-analysis including all effects meeting Vahey et al.'s own inclusion and exclusion criteria
+
+Excluding non-clinically relevant and effects that do not involve a relationship with an external variable, which cannot provide evidence of criterion validity.
+
+Details of the meta-analytic strategy, which used contemporary methods:
 
 - Weighting by inverse variance rather than sample size, as sample size provides a poorer proxy of measurement error. This is now more standard practice in meta-analysis.
 - Fishers r-to-z transformations to deal with ceiling effects on confidence intervals. 
-- REML estimator function.
-- Multilevel meta-analysis model rather than weighted-averaging of effect sizes (random intercept for source article).
+- REML estimator rather than Hunter & Schmidt.
+- Multilevel meta-analysis model rather than weighted-averaging of effect sizes (random intercept for source study).
 
 ```{r fig.height=32, fig.width=7.5}
 
@@ -690,11 +719,9 @@ predictions_new <-
   as.data.frame() %>%
   select(-se) 
 
-predictions_new %>%
+predictions_new_backtransformed <- predictions_new %>%
   mutate_all(transf.ztor) %>%
-  round_df(2) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  round_df(2)
 
 # plot
 data_forest_new <- data_for_meta_new %>%
@@ -819,46 +846,31 @@ ggplot2::ggsave(filename = "plots/forest plot new multilevel model.pdf",
                 height = 32, 
                 units = "in")
 
-# summarize results
-predictions_new_backtransformed <- predictions_new %>%
-  mutate_all(transf.ztor) %>%
-  round_df(2)
-
-meta_effect_new <- 
-  paste0("k = ", fit_new$k, ", r = ", predictions_new_backtransformed$pred,
-         ", 95% CI [", predictions_new_backtransformed$ci.lb, ", ", predictions_new_backtransformed$ci.ub, "]",
-         ", 95% CR [", predictions_new_backtransformed$pi.lb, ", ", predictions_new_backtransformed$pi.ub, "]",
-         ", p = ", signif(2*pnorm(-abs(fit_new$zval)), digits = 1))  # exact p value from z score
-
 ```
 
-Meta effect: `r meta_effect_new`.
+Meta effect: `r meta_effect_string(fit_new, predictions_new_backtransformed)`.
 
-### Power analyses
+## Power analyses
 
 Less appropriate one-tailed:
 
-- Minimum sample size using r = `r predictions_new_backtransformed$pred` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, *one*-tailed. 
-- Minimum sample size using lower CI r = `r predictions_new_backtransformed$ci.lb` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$ci.lb, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, *one*-tailed.
+- Minimum sample size using r = `r predictions_new_backtransformed$pred`, `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants needed to have 80% power, alpha = .05, *one*-tailed. 
+- Minimum sample size using lower CI r = `r predictions_new_backtransformed$ci.lb`, `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$ci.lb, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants needed to have 80% power, alpha = .05, *one*-tailed.
 - This suggested sample sizes are more than `r round_half_up(ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "greater")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 0)` times that recommended by Vahey et al.
 
 More appropriate two-tailed:
 
-- Minimum sample size using r = `r predictions_new_backtransformed$pred` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, *two*-tailed. 
-- Minimum sample size using lower CI r = `r predictions_new_backtransformed$ci.lb` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$ci.lb, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, *two*-tailed.
+- Minimum sample size using r = `r predictions_new_backtransformed$pred`, `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants needed to have 80% power, alpha = .05, *two*-tailed. 
+- Minimum sample size using lower CI r = `r predictions_new_backtransformed$ci.lb`, `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$ci.lb, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants needed to have 80% power, alpha = .05, *two*-tailed.
 - This suggested sample sizes are more than `r round_half_up(ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 0)` times that recommended by Vahey et al.
 
-# Conceptual critiques
-
-## Inclusion strategy of effects that "could have been predicted"
-
-## Analyses of the IRAP as the DV rather than the DV
+# Conceptual critique: Analyses of the IRAP as the DV rather than the DV
 
 Incompatible with the idea that the IRAP can be used for clinical assessment. This would require that IRAP tells us something about individuals' clinical status/group/location on a continuum/etc (i.e., IRAP effects -> individuals). Most of the effect sizes come from analyses that assume the opposite, i.e., that individuals' clinical status/group/location on a continuum/etc. can tell us about their IRAP effects (i.e., individuals -> IRAP effects). 
 
 Even this new meta-analysis is mostly informative only for researchers wishing to study IRAP effects, rather than study individuals using the IRAP.
 
-Similar conceptual criticisms have been made elsewhere. Schmall et al (2016) reported results from a very large study which concluded that hippocampal volume ‘robustly discriminate[d] MDD patients from healthy controls’ (p. 1). However, Fried & Kievit (2016) pointed out that this was not the case: depression status predicted a detectable difference in mean hippocampal volume, but hippocampal volume was very weakly associated with indivdiuals' depression status. They point out that Schmall et al had reversed their analysis' DV and IV when making conclusions. This error is equally applicable to Vahey et al: even if their meta analysis was computationally replicable, its conclusions would still not support their claim that the meta ansysis “demonstrates the potential of the IRAP as a tool for clinical assessment” (p. 64). Rather, it would demonstrate that known clinical status (etc) has potential as a tool for the assessment of IRAP scores.
+Similar conceptual criticisms have been made elsewhere. Schmall et al (2016) reported results from a very large study which concluded that hippocampal volume ‘robustly discriminate[d] MDD patients from healthy controls’ (p. 1). However, Fried & Kievit (2016) pointed out that this was not the case: depression status predicted a detectable difference in mean hippocampal volume, but hippocampal volume was very weakly associated with individuals' depression status. They point out that Schmall et al had reversed their analysis' DV and IV when making conclusions. This error is equally applicable to Vahey et al: even if their meta analysis was computationally replicable, its conclusions would still not support their claim that the meta analysis “demonstrates the potential of the IRAP as a tool for clinical assessment” (p. 64). Rather, it would demonstrate that known clinical status (etc) has potential as a tool for the assessment of IRAP scores.
 
 
 
