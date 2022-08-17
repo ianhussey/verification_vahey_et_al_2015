@@ -103,7 +103,9 @@ data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
 
 Calculated from meta analytic effect sizes reported in forest plot and text.
 
-Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54], 95% CR [.23, .67]. Using this effect size, they conducted a power analysis. 
+Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54], 95% CR [.23, .67]. Note that this is quite a large effect size, equivalent to Cohen's d = 1.01. 
+
+Using this effect size, they conducted a power analysis. 
 
 - They reported that: "based on the current meta-effect [r = .40], a sample size of 29 participants would provide a study with a statistical power of .80 when examining the statistical significance of first-order Pearson's r correlations between clinically-focused IRAP effects and corresponding criterion variables" (p.63); and 
 - "Adopting a conservative approach in favour of controlling for overly optimistic publication biases, the most recent recommendation is to calculate sample size requirements not in terms of a given meta-effect, but rather in terms of the lower bound of its associated confidence interval (Perugini, Gallucci, & Costantini, 2014). Given that we obtained a confidence interval of (.40, .54) around the present meta-effect, Perugini et al.'s approach implies that a sample size of at least N = 37 would be required in order to achieve a statistical power of .80 when testing a continuous first-order correlation between a clinically-focused IRAP effect and a given criterion variable" (p.63).
@@ -511,7 +513,9 @@ Attempted to reextract the individual effect sizes listed in the supplementary m
 
 Note that only a subset were possible to reextract/convert, for the following reasons:
 
-- Vahey et al. appear to have treated the $\eta^2_p$ effect size reported in original papers as if it was equivalent to $\eta^2$, which it is not: (a) $\eta^2$ has a relatively simpler mathematical transformation to Pearson's r, which Vahey et al. appear to have applied to $\eta^2_p$, which is not possible to convert to Pearson's r due to the fact that it is a partial correlation (e.g., Hooper et al., 2010; Hussey & Barnes-Holmes, 2012).
+- Vahey et al. appear to have treated the $\eta^2_p$ effect size reported in original papers as if it was equivalent to $\eta^2$ for the purposes of conversion to r, which it is not: (a) $\eta^2$ has a relatively simpler mathematical transformation to Pearson's r, which Vahey et al. appear to have applied to $\eta^2_p$, which is not possible to convert to Pearson's r due to the fact that it is a partial correlation (e.g., Hooper et al., 2010; Hussey & Barnes-Holmes, 2012).
+- Similarly, Vahey et al. appear to have treated (partial) eta squared as if it is generalized eta squared for the purposes of meta analysis. (Partial) eta square values for different types of factorial designs cannot be meta analyzed together (lakens 2013).
+- confidence intervals around r values converted from eta squared appear be calculated using r and N, which is in appropriate for eta2. this might not be the case, it is a best guess. but the manuscript fails to specify how they were calculated. 
 - In some cases, effect sizes reported in Vahey et al.'s supplementary materials did not refer to effect sizes that were reported in the original article (e.g., Timko et al., 2010; Study 1, correlation between overall D score	and DASS-total). It is possible that these effects were obtained by contacting the original authors, but this is not reported in Vahey et al.
 - Some were not reported in sufficient detail in the original paper to allow for the calculation of an effect size, and contact with the original authors did not result in data/result being provided (e.g., Parling et al., 2012).
 - Non-criterion effects that referred only to the presence of an IRAP effect, but not the covariation between IRAP scores and an external variable, were not reextracted or converted. This was on the basis that this work is labor intensive, these effects do not meet the inclusion criteria, and therefore these effects would not be used in the subsequent new meta analysis. This point is discussed further below.  
@@ -613,8 +617,26 @@ Evidence from Vahey et al.'s choices of what to include vs not is at times hard 
 
 many effects that would seem to meet the criterion of being clinically relevant, but which were smaller in magnitude
 
-*EXPAND WITH EXAMPLES*
+Some interaction effects were included but their main effects were not, when the main effects seem as plausibly clinically relevant as the interactions (e.g., Hussey et al 2012). This is hard to defend against accusations of cherry picking.
 
+dawson child sex offenders group child-sexual trial type, non significant, not selected
+
+Timko et al. (2010; Study 1) overall D-IRAP score ~ DASS-total (r = 0.48): this correlation with DASS total is not actually reported in the manuscript. Perhaps Vahey asked the authors for their data? But this goes beyond stating that some hypotheses were potentially a priori predictable to imposing new ones the authors didn't ask.
+
+timko et al., 2010 study 1, Between  groups comparison - not dieting versus those dieting. NB there are two  dieting groups, one to lose weight and one to maintain. Vahey does not note  which they are comparing, or why one comparison was excluded. [only the significant one was included?]
+
+Vahey et al (2009) reported comparisons between three groups: 
+
+- undergraduate vs main block prisoners (r = .46, in line with predictions)
+
+- main block vs open air prisoners (r = -.62, against predictions)
+
+- undergraduate vs open air prisoners (r = -0.04, against predictions)
+  - Only the first ES was included in Vahey's meta analysis, while also being the only ES that was large and in the predicted direction. 
+
+nicholson papers  sometimes chose subscale correlations but not others, and this choice seems to be related to the strength of the result (ie preferable result was chosen)
+
+nicholson and vahey papers illustrate the need for blinding - authors of meta analysis who were assessing bias in the original papers were authors of many of the original papers, and futhermore demosntrated bias in the selection of effect sizes from those papers. 
 
 ## Comprehensive extraction of effect sizes
 
