@@ -476,7 +476,7 @@ p_comparison_reaveraged <-
   xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
   ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials") +
   annotate("text", x = .66, y = .45, size = 3, label = "Overestimates validity") +
-  annotate("text", x = .45, y = .66, size = 3, label = "Underestimates valdiity")
+  annotate("text", x = .45, y = .66, size = 3, label = "Underestimates validity")
 
 p_comparison_reaveraged
 
@@ -563,7 +563,7 @@ p_comparison_reextracted <-
   xlab("Reported in Vahey et al.'s (2015)\nsupplementary materials") +
   ylab("Reextracted from original articles\n") +
   annotate("text", x = .54, y = .175, size = 3, label = "Overestimates validity") +
-  annotate("text", x = .175, y = .54, size = 3, label = "Underestimates valdiity")
+  annotate("text", x = .175, y = .54, size = 3, label = "Underestimates validity")
 
 p_comparison_reextracted
 
