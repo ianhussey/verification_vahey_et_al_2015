@@ -615,28 +615,24 @@ data_reextracted_and_annotated %>%
 
 Evidence from Vahey et al.'s choices of what to include vs not is at times hard to defend. Eg vahey et al 2009; comparisons between Nicholson et al. studies.
 
-many effects that would seem to meet the criterion of being clinically relevant, but which were smaller in magnitude
+Many effects that would seem to meet the criterion of being clinically relevant which were not included. Similar effects that were larger in magnitude were included.
 
-Some interaction effects were included but their main effects were not, when the main effects seem as plausibly clinically relevant as the interactions (e.g., Hussey et al 2012). This is hard to defend against accusations of cherry picking.
+- Vahey et al (2009) reported comparisons between three groups: 
+  - undergraduate vs main block prisoners (r = .46, in line with predictions)
+  - main block vs open air prisoners (r = -.62, against predictions)
+  - undergraduate vs open air prisoners (r = -0.04, against predictions)
+    - Only the first ES was included in Vahey's meta analysis, while also being the only ES that was large and in the predicted direction. As the first author of the original article, Vahey can't really claim to be unfamiliar with the specifics of the work.
+- nicholson papers  sometimes chose subscale correlations but not others, and this choice seems to be related to the strength of the result (ie preferable result was chosen). As a coauthor of the original article, Nicholson can't really claim to be unfamiliar with the specifics of the work.
+- Dawson et al (2012): child sex offenders group child-sexual trial type, non significant: not included
+- timko et al., 2010 study 1, Between  groups comparison - not dieting versus those dieting. NB there are two  dieting groups, one to lose weight and one to maintain. Vahey does not note  which they are comparing, or why one comparison was excluded. [only the larger significant effect was included]
 
-dawson child sex offenders group child-sexual trial type, non significant, not selected
+Some interaction effects were included but their main effects were not, when the main effects seem as plausibly clinically relevant as the interactions. 
 
-Timko et al. (2010; Study 1) overall D-IRAP score ~ DASS-total (r = 0.48): this correlation with DASS total is not actually reported in the manuscript. Perhaps Vahey asked the authors for their data? But this goes beyond stating that some hypotheses were potentially a priori predictable to imposing new ones the authors didn't ask.
+- Hussey et al 2012
 
-timko et al., 2010 study 1, Between  groups comparison - not dieting versus those dieting. NB there are two  dieting groups, one to lose weight and one to maintain. Vahey does not note  which they are comparing, or why one comparison was excluded. [only the significant one was included?]
+Some included effects were not reported in the original manuscript. However, Vahey et al do not report in their manuscript that they did not merely extract reported effect sizes but generated new results. This can't be defended as an effort to standardize the effects being analyzed, as some effects come from individual trial types, some from overall effects, and some from the interaction between group and trial type.
 
-Vahey et al (2009) reported comparisons between three groups: 
-
-- undergraduate vs main block prisoners (r = .46, in line with predictions)
-
-- main block vs open air prisoners (r = -.62, against predictions)
-
-- undergraduate vs open air prisoners (r = -0.04, against predictions)
-  - Only the first ES was included in Vahey's meta analysis, while also being the only ES that was large and in the predicted direction. 
-
-nicholson papers  sometimes chose subscale correlations but not others, and this choice seems to be related to the strength of the result (ie preferable result was chosen)
-
-nicholson and vahey papers illustrate the need for blinding - authors of meta analysis who were assessing bias in the original papers were authors of many of the original papers, and futhermore demosntrated bias in the selection of effect sizes from those papers. 
+- Timko et al. (2010; Study 1) overall D-IRAP score ~ DASS-total (r = 0.48).
 
 ## Comprehensive extraction of effect sizes
 
