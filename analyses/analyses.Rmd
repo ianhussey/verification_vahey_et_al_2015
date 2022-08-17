@@ -31,6 +31,7 @@ library(irr)
 library(metafor)
 library(forestploter)
 library(janitor)
+library(greekLetters)
 library(knitr)
 library(kableExtra)
 
@@ -44,18 +45,30 @@ round_df <- function(df, n_digits = 3) {
 
 # apa format p value -----
 apa_p_value <- function(p){
-  p_formatted <- ifelse(p >= 0.001, paste("=", round(p, 3)),
+  p_formatted <- ifelse(p >= 0.001, paste("=", round_half_up(p, 3)),
                         ifelse(p < 0.001, "< .001", NA))
   p_formatted <- gsub(pattern = "0.", replacement = ".", x = p_formatted, fixed = TRUE)
   p_formatted
 }
 
-# add heterogeneity metrics to metafor forest plot
-add_heterogeneity_metrics_to_forest <- function(fit) {
-  bquote(paste("RE Model (", 
-               italic('I')^"2", " = ", .(formatC(format(round(fit$I2, 1), nsmall = 1))),
-               "%, ", italic('H')^"2", " = ", .(formatC(format(round(fit$H2, 1), nsmall = 1))), ")"))
-}
+# heterogeneity strings
+# heterogeneity_string <- function(fit){
+#   #"Q(df=", fit$k - 1, ") = ", janitor::round_half_up(fit$QE, 2),
+#   #        ", p ", ifelse(fit$QEp < 0.001, "< .001", paste0("= ", as.character(janitor::round_half_up(fit$QEp, 3)))),
+#   #        ", ", 
+#   if(!is.null(fit$I2)){
+#     heterogeneity_string <- 
+#       paste0("Heterogeneity: ", greekLetters::greeks("tau^2"), " = ", janitor::round_half_up(fit$tau2, 2),
+#              ", ", greekLetters::greeks("I^2"), " = ", janitor::round_half_up(fit$I2, 2),
+#              "%, ", greekLetters::greeks("H^2"), " = ",janitor::round_half_up(fit$H2, 2))
+#   } else {
+#     heterogeneity_string <- 
+#       paste0("Heterogeneity: ", greekLetters::greeks("tau^2"), " = ", janitor::round_half_up(fit$tau2, 2))
+#   }
+#   return(heterogeneity_string)
+# }
+# 
+# footnote   = heterogeneity_string(fit_new)
 
 # notation off
 options(scipen = 999)
@@ -67,16 +80,17 @@ custom_theme <-
                ci_lwd       = 1.5,
                ci_Theight   = 0.2,
                summary_fill = "black",
-               summary_col  = "black")
+               summary_col  = "black",
+               footnote_cex = 0.8)
 
 # get data
 data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
 
 ```
 
-# Computational replication of Vahey et al (2015) 
+# Computational replication of original analylses
 
-## Power analyses
+## Power analyses from meta analytic effect sizes reported in forest plot and text
 
 Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54], 95% CR [.23, .67]. Using this effect size, they conducted a power analysis. 
 
@@ -93,64 +107,9 @@ However, Vahey et al.'s analytic choices here could be questioned: One-tailed co
 
 - Minimum sample size using r = .45: `r ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed. 
 - Minimum sample size using lower CI r = .40: `r ceiling(pwr.r.test(n = NULL, r = .40, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, **two**-tailed.
-- This suggested sample sizes using more common assumptions are `r round(ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
+- This suggested sample sizes using more common assumptions are `r round_half_up(ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 2)*100 - 100`% higher than Vahey et al.'s reported estimates.
 
-## Forest plot
-
-### From data in forest plot
-
-```{r fig.height=2.5, fig.width=5}
-
-data_vahey_forest <- data_vahey %>%
-  drop_na() %>%
-  select(article_abbreviated,
-         n = n_forest_plot,
-         r = mean_r_forest_plot_numeric,
-         lower = ci_lower_forest_plot_numeric,
-         upper = ci_upper_forest_plot_numeric) %>%
-  bind_rows(tibble(article_abbreviated = "Meta",
-                   n = 35, # arbitrary number to make the diamond an appropriate size
-                   r = .45,
-                   lower = .23,
-                   upper = .67)) %>%
-  mutate(size = n/sum(n),
-         article_abbreviated = fct_relevel(article_abbreviated,
-                                           "Carpenter et al. (2012)", 
-                                           "Dawson et al. (2009)", 
-                                           "Hooper et al, (2010)", 
-                                           "Hussey & Barnes-Holmes (2012)", 
-                                           "Kishita et al. (2014)", 
-                                           "Kosnes et al. (2013)", 
-                                           "Nicholson & Barnes-Holmes (2012a)", 
-                                           "Nicholson & Barnes-Holmes (2012b)", 
-                                           "Nicholson, Dempsey et al. (2013)", 
-                                           "Nicholson, McCourt et al. (2013)", 
-                                           "Parling et al. (2011)", 
-                                           "Remue et al. (2013)", 
-                                           "Timko et al. (2010, Study 1)", 
-                                           "Vahey et al. (2009)", 
-                                           "Vahey et al. (2010)",
-                                           "Meta")) %>%
-  mutate(` ` = paste(rep(" ", 30), collapse = " ")) %>%
-  select(Article = article_abbreviated, ` `, r, lower, upper,  n, size) %>%
-  round_df(2)
-
-p <- 
-  forestploter::forest(data       = select(data_vahey_forest, -size),
-                       est        = data_vahey_forest$r,
-                       lower      = data_vahey_forest$lower, 
-                       upper      = data_vahey_forest$upper,
-                       sizes      = 1/data_vahey_forest$size,
-                       is_summary = c(rep(FALSE, nrow(data_vahey_forest)-1), TRUE),
-                       ci_column  = 2,
-                       ref_line   = 0,
-                       theme      = custom_theme)
-
-p
-
-```
-
-## Meta-analytic effect size 
+## Meta-analytic effect size and intervals from weighted average effect sizes reported in forest plot
 
 The power analyses relied on the accuracy of the meta-analytic effect size. So, I then attempted to computationally reproduce the meta-analytic effect size from the effect sizes, confidence intervals, credibility intervals, and sample sizes reported in Vahey et al.'s forest plot and their description of their meta-analytic method in their manuscript. 
 
@@ -160,11 +119,41 @@ On inspection, Field & Gillett (2010) make a distinction between the Hunter & Sc
 
 Vahey et al. (2015) do not report applying any transformations to their data. However, Vahey et al.'s (2015) individual effect sizes in their forest plot have asymmetric confidence intervals. This implies that a transformation was performed. It is therefore possible that Vahey et al. combined the two methods (and code) provided by Field & Gillett (2010). I first fit a Hunter & Schmidt method, then a combined Hunter & Schmidt and Hedges' and colleagues method.  
 
-### Hunter & Schmidt method
+### Hunter & Schmidt method using Field & Gillett's (2010) SPSS script
+
+See "computational replication of meta-analysis via SPSS script" folder.
+
+Summary of results:
+
+```{r}
+
+tibble(
+  analysis = c("k studies", "Total N", "Effect size r", "CI lower", "CI upper", "CR lower", "CR upper"),
+  vahey = c(15, 494, .45, .40, .54, .23, .67),
+  reanalysis = c(15, 494, .4670, .1955, .7392, .4674, .4674)
+)  %>%
+  round_df(2) %>%
+  mutate(diff = reanalysis - vahey,
+         congruence = reanalysis == vahey) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+```
+
+- Meta estimate *is not* the same as Vahey et al.'s forest plot.
+- Meta confidence intervals *are not* same as Vahey et al.'s stated in text.
+- Meta credibility/prediction intervals *are not* the same as Vahey et al.'s credibility intervals in their forest plot.
+
+### Hunter & Schmidt method using metafor R package
 
 Information about implementation of Hunter & Schmidt-style meta-analysis in metafor from [here](http://www.metafor-project.org/doku.php/tips:hunter_schmidt_method).
 
 ```{r}
+
+total_n <- data_vahey %>%
+  distinct(article, n_forest_plot) %>%
+  summarize(total_n = sum(n_forest_plot, na.rm = TRUE)) %>%
+  pull(total_n)
 
 # calculate variances
 data_recalculated_variance <- 
@@ -191,10 +180,10 @@ fit_reproduced <-
 predictions_reproduced <- 
   predict(fit_reproduced) %>%
   as.data.frame() %>%
-  select(-se) %>%
-  round_df(2)
+  select(-se) 
 
 predictions_reproduced %>%
+  round_df(2) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
@@ -206,12 +195,18 @@ data_forest <- data_recalculated_variance %>%
          r = yi,
          lower,
          upper) %>%
-  bind_rows(tibble(article_abbreviated = "Meta",
+  # bind_rows(tibble(article_abbreviated = "Meta",
+  #                  n = 35, # arbitrary number to make the diamond an appropriate size
+  #                  r = predictions_reproduced$pred,
+  #                  lower = predictions_reproduced$pi.lb,
+  #                  upper = predictions_reproduced$pi.ub)) %>%
+  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", "Meta (credibility interval)"),
                    n = 35, # arbitrary number to make the diamond an appropriate size
-                   r = predictions_reproduced$pred,
-                   lower = predictions_reproduced$pi.lb,
-                   upper = predictions_reproduced$pi.ub)) %>%
+                   r = c(predictions_reproduced$pred, predictions_reproduced$pred),
+                   lower = c(predictions_reproduced$ci.lb, predictions_reproduced$pi.lb),
+                   upper = c(predictions_reproduced$ci.ub, predictions_reproduced$pi.ub))) %>%
   mutate(size = n/sum(n),
+         n = ifelse(str_detect(article_abbreviated, "Meta"), total_n, n),
          article_abbreviated = fct_relevel(article_abbreviated,
                                            "Carpenter et al. (2012)", 
                                            "Dawson et al. (2009)", 
@@ -239,22 +234,32 @@ p_reproduced <-
                        lower      = data_forest$lower, 
                        upper      = data_forest$upper,
                        sizes      = 1/data_forest$size,
-                       is_summary = c(rep(FALSE, nrow(data_forest)-1), TRUE),
+                       #is_summary = c(rep(FALSE, nrow(data_forest)-1), TRUE),
+                       is_summary = c(rep(FALSE, nrow(data_forest)-2), TRUE, TRUE),
                        ci_column  = 2,
                        ref_line   = 0,
-                       theme      = custom_theme)
+                       theme      = custom_theme,
+                       xlim       = c(-0.3, 1.1),
+                       ticks_at   = c(-.2, 0, .2, .4, .6, .8, 1.0))
 
 p_reproduced
+
+ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method.pdf", 
+                plot = p_reproduced,
+                device = "pdf",
+                width = 7.5, 
+                height = 4.5, 
+                units = "in")
 
 ```
 
 - Individual estimates *are* the same as Vahey et al.'s forest plot.
 - Individual estimates' confidence intervals *are not* the same as Vahey et al.'s forest plot.
 - Meta estimate *is not* the same as Vahey et al.'s forest plot.
-- Meta confidence intervals *are* same as Vahey et al.'s forest plot.
-- Meta prediction intervals *are not* the same as Vahey et al.'s credibility intervals in their forest plot.
+- Meta confidence intervals *are* same as Vahey et al.'s stated in text.
+- Meta credibility/prediction intervals *are not* the same as Vahey et al.'s credibility intervals in their forest plot.
 
-### Combined Hunter & Schmidt and Hedges' and colleagues method
+### Hunter & Schmidt method with Hedges' and colleagues transformations using metafor R package
 
 Fisher's r-to-z transformation and back transformation, with HS estimator. No Overton (1998) transformation.
 
@@ -285,10 +290,11 @@ fit_reproduced_transformed <-
 predictions_reproduced_transformed <- 
   predict(fit_reproduced_transformed) %>%
   as.data.frame() %>%
-  select(-se) %>%
-  round_df(2)
+  select(-se)
 
 predictions_reproduced_transformed %>%
+  mutate_all(transf.ztor) %>%
+  round_df(2) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
@@ -299,15 +305,21 @@ data_forest_transformed <- data_recalculated_variance_transformed %>%
          r = yi,
          lower,
          upper) %>%
-  bind_rows(tibble(article_abbreviated = "Meta",
+  # bind_rows(tibble(article_abbreviated = "Meta",
+  #                  n = 35, # arbitrary number to make the diamond an appropriate size
+  #                  r = predictions_reproduced_transformed$pred,
+  #                  lower = predictions_reproduced_transformed$pi.lb,
+  #                  upper = predictions_reproduced_transformed$pi.ub)) %>%
+  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", "Meta (credibility interval)"),
                    n = 35, # arbitrary number to make the diamond an appropriate size
-                   r = predictions_reproduced$pred,
-                   lower = predictions_reproduced$pi.lb,
-                   upper = predictions_reproduced$pi.ub)) %>%
+                   r = c(predictions_reproduced_transformed$pred, predictions_reproduced_transformed$pred),
+                   lower = c(predictions_reproduced_transformed$ci.lb, predictions_reproduced_transformed$pi.lb),
+                   upper = c(predictions_reproduced_transformed$ci.ub, predictions_reproduced_transformed$pi.ub))) %>%
   mutate(r = transf.ztor(r),
          lower = transf.ztor(lower),
          upper = transf.ztor(upper)) %>%
   mutate(size = n/sum(n),
+         n = ifelse(str_detect(article_abbreviated, "Meta"), total_n, n),
          article_abbreviated = fct_relevel(article_abbreviated,
                                            "Carpenter et al. (2012)", 
                                            "Dawson et al. (2009)", 
@@ -329,34 +341,52 @@ data_forest_transformed <- data_recalculated_variance_transformed %>%
   select(Article = article_abbreviated, ` `, r, lower, upper, n, size) %>%
   round_df(2)
 
-p_forest_transformed <- 
+p_reproduced_transformed <- 
   forestploter::forest(data       = select(data_forest_transformed, -size),
                        est        = data_forest_transformed$r,
                        lower      = data_forest_transformed$lower, 
                        upper      = data_forest_transformed$upper,
                        sizes      = 1/data_forest_transformed$size,
-                       is_summary = c(rep(FALSE, nrow(data_forest_transformed)-1), TRUE),
+                       #is_summary = c(rep(FALSE, nrow(data_forest)-1), TRUE),
+                       is_summary = c(rep(FALSE, nrow(data_forest)-2), TRUE, TRUE),
                        ci_column  = 2,
                        ref_line   = 0,
-                       theme      = custom_theme)
+                       theme      = custom_theme,
+                       xlim       = c(-0.3, 1.1),
+                       ticks_at   = c(-.2, 0, .2, .4, .6, .8, 1.0))
 
-p_forest_transformed
+p_reproduced_transformed
+
+ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method with Fisher's r-to-z transformations.pdf", 
+                plot = p_reproduced_transformed,
+                device = "pdf",
+                width = 7.5, 
+                height = 4.5, 
+                units = "in")
 
 ```
 
 - Individual estimates *are* the same as Vahey et al.'s forest plot.
 - Individual estimates' confidence intervals *are* the same as Vahey et al.'s forest plot.
 - Meta estimate *is not* the same as Vahey et al.'s forest plot.
-- Meta confidence intervals *are not* same as Vahey et al.'s forest plot.
-- Meta prediction intervals *are not* the same as Vahey et al.'s credibility intervals in their forest plot.
+- Meta confidence intervals *are* same as Vahey et al.'s stated in text.
+- Meta credibility/prediction intervals *are not* the same as Vahey et al.'s credibility intervals in their forest plot.
 
 ### Summary
 
-Vahey et al.'s meta CIs may have come from a meta analysis of native weighted r estimates, whereas their individual studies' confidence intervals may have come from a meta analysis of weighted r estimates transformed using Fisher's r-to-z prior to analysis and then back-transformed for plotting. 
+I report three attempts to reproduce Vahey et al.'s results using (a) Field & Gillett's (2010) SPSS script for a Hunter & Schmidt style meta-analysis, which Vahey referred me to use to reproduce their results, (b) a close implementation of the same Hunter & Schmidt style meta-analysis in R using the well-established metafor package, and (c) the same Hunter& Schmidt meta-analysis in r/metafor adding the transformations Field & Gillett recommended for a different analytic strategy (i.e., Hedges' and colleagues use of Fisher's r-to-z transformations).
 
-It is unclear where their meta estimate or prediction/credibility intervals come from, they could not be reproduced.
+None of the three analytic strategies/implementations fully reproduced Vahey et al.'s results. 
 
-## Weighted-average effect sizes reported in forest plot
+All three return the same meta-estimate of effect size: r = .47, where Vahey et al reported r = .45.
+
+Both of the metafor implementations produce the same confidence intervals as reported in Vahey et al, but Field & Gillett's SPSS script produces very different ones.
+
+Only the analysis that included Fishers' r-to-z transformations can account for and replicate the asymmetric confidence intervals on individual effect sizes that Vahey et al. reported in their forest plot. At minimum, it appears that Vahey et al. employed (and did not report using) a mixture of the Hunter & Schmidt method and the Hedges' method of transformation. 
+
+No implementation produced similar credibility intervals to Vahey et al.
+
+## Weighted-average effect sizes reported in forest plot from individual effect sizes in supplementary materials
 
 Next, I attempted to reproduce the weighted-mean effect sizes reported in Vahey et al.'s forest plot from the individual effect sizes they reported in their supplementary materials. 
 
@@ -404,7 +434,7 @@ ggplot(data_weighted_effect_sizes, aes(mean_r_forest_plot_numeric, r_recalculate
 # table
 data_weighted_effect_sizes %>%
   summarize(n_incongruent = sum(ifelse(congruence == "Incongruent", TRUE, FALSE)),
-            percent_incongruent = round(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
+            percent_incongruent = round_half_up(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
@@ -477,11 +507,10 @@ Only a subset of effect sizes were reextracted and reconverted to Pearson's r. T
 
 - Vahey et al. appear to have treated the $\eta^2_p$ effect size reported in original papers as if it was equivalent to $\eta^2$, which it is not: (a) $\eta^2$ has a relatively simpler mathematical transformation to Pearson's r, which Vahey et al. appear to have applied to $\eta^2_p$, which is not possible to convert to Pearson's r due to the fact that it is a partial correlation (e.g., Hooper et al., 2010; Hussey & Barnes-Holmes, 2012).
 - In some cases, effect sizes reported in Vahey et al.'s supplementary materials did not refer to effect sizes that were reported in the original article (e.g., Timko et al., 2010; Study 1, correlation between overall D score	and DASS-total).
-- In some cases, effect sizes referred to analyses where mean IRAP D scores were the Dependent Variable rather than the Independent Variable (e.g., Kosnes et al., 2013, Parling et al., 2012; Hussey et al., 2012; Timko et al., 2010; Study 1).
 - Some were not reported in sufficient detail in the original paper to allow for the calculation of an effect size, and contact with the original authors did not result in data/result being provided (e.g., Parling et al., 2012).
 - Vahey et al. included a large number of non-zero IRAP effects (i.e., a reaction time differential between block types) as effect sizes. However, it should be noted that the presence of an IRAP effect in isolation, without reference to an external criterion variable, by definition cannot provide evidence for the IRAP's (clinical) criterion validity. As such, these effects were not considered for reextraction and checking, given that (a) this extraction work was labor intensive, and (b) these effect sizes would not later be employed in the updated meta-analysis for the aforementioned reason.
 
-It is important to note that my goal here was not to account for the accuracy of every effect size, but to (a) demonstrate the difficulty of even assessing how effect sizes were extracted and calculated, and (b) illustrating that a number of errors have been made in the effect sizes it was possible to reextract and reconvert (agnostic to whether the ones I have not managed to extract and convert are correct or incorrect). That is, highlighting errors in the extraction and conversion of some effect sizes is sufficient to make the point that issues exist.  
+It is important to note that my goal here was not to account for the accuracy of every effect size, but to (a) demonstrate the difficulty of even assessing how effect sizes were extracted and calculated, and (b) illustrating that a number of errors have been made in the effect sizes it was possible to reextract and reconvert (agnostic to whether the ones I have not managed to extract and convert are correct or incorrect). That is, highlighting errors in the extraction and conversion of some effect sizes is sufficient to make the point that issues exist.
 
 ```{r fig.height=4.5, fig.width=4.5}
 
@@ -498,16 +527,16 @@ data_individual_effect_sizes <- read.csv("../data/data_reextracted_and_annotated
 # table
 data_individual_effect_sizes %>%
   summarize(n_reextracted = sum(!is.na(r_from_paper)),
-            percent_reextracted = round(sum(!is.na(r_from_paper))/n(), 3)*100) %>%
+            percent_reextracted = round_half_up(sum(!is.na(r_from_paper))/n(), 3)*100) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
 # assess congruence
 data_individual_effect_sizes_congruence <- data_individual_effect_sizes %>%
   na.omit() %>%
-  mutate(congruence = ifelse(round(r_from_paper, 2) == round(r_vahey, 2), "Congruent", "Incongruent"),
+  mutate(congruence = ifelse(round_half_up(r_from_paper, 2) == round_half_up(r_vahey, 2), "Congruent", "Incongruent"),
          congruence = fct_relevel(congruence, "Incongruent", "Congruent"),
-         difference = round(r_from_paper - r_vahey, 2))
+         difference = round_half_up(r_from_paper - r_vahey, 2))
 
 # plot
 ggplot(data_individual_effect_sizes_congruence, aes(r_vahey, r_from_paper)) +
@@ -526,7 +555,7 @@ ggplot(data_individual_effect_sizes_congruence, aes(r_vahey, r_from_paper)) +
 # table
 data_individual_effect_sizes_congruence %>%
   summarize(n_incongruent = sum(ifelse(congruence == "Incongruent", TRUE, FALSE)),
-            percent_incongruent = round(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
+            percent_incongruent = round_half_up(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
@@ -556,9 +585,11 @@ Table includes those that differed.
   - evidence from our ratings that many effects may have been predictable. seems very subjective - highlighting this point is useful at least.
   - evidence from Vahey et al.'s choices of what to include and not include seem less defensible however. Eg vahey et al 2009; comparisons between Nicholson et al. studies.
 
-# New meta-analysis
+# Extended analyses
 
-- In attempting to determine whether Cahey et al.'s extracted effect sizes were accurately done, I realized that they made many mistakes of extraction or conversion, but more importantly many questionable decisions about which effect sizes they elected to include (e.g., presence of IRAP effects without reference to an external variable) or exclude (many effects that would seem to meet the criterion of being clinically relevant, but which were smaller in magnitude). I therefore elected to conduct a new meta-analysis using all clinically-relevant extracted effect sizes. I excluded the following from the extracted effect sizes:
+## Meta-analysis including all effects meeting Vahey et al.'s own inclusion and exclusion criteria
+
+- In attempting to determine whether Vahey et al.'s extracted effect sizes were accurately done, I realized that they made many mistakes of extraction or conversion, but more importantly many questionable decisions about which effect sizes they elected to include (e.g., presence of IRAP effects without reference to an external variable) or exclude (many effects that would seem to meet the criterion of being clinically relevant, but which were smaller in magnitude). I therefore elected to conduct a new meta-analysis using all clinically-relevant extracted effect sizes. I excluded the following from the extracted effect sizes:
 
 - Mere IRAP effects without reference to an external variable that can provide criterion validity. By analogy, the fact that participants mean scores on on a self-report scale or a Stroop task tells us nothing about these measures' criterion validity, which is by definition assessed in relation to other external measures.  
 - Effect sizes derived from analyses that employed IRAP effects as the DV. The final conclusion of the article is that the IRAP shows promise as a tool for clinical assessment, i.e., that it can be used to predict group membership. Predicting the mean IRAP effect on the basis of known groups is of relatively little utility. Moreover, this analytic mistake of confusing the IV and DV when attempting to provide evidence for a task's validity has been well documented elsewhere as a threat to research findings (e.g., Fried et al REF).
@@ -575,9 +606,14 @@ data_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
                                                 clinically_relevant_criterion_rater_2)))) %>%
   ungroup()
 
+total_n <- data_reextracted %>%
+  distinct(article, n_from_paper) %>%
+  summarize(total_n = sum(n_from_paper)) %>%
+  pull(total_n)
+
 ```
 
-## Inter-rater reliability of inclusions
+### Inter-rater reliability of inclusions
 
 (i.e., of coding of effects as clinically relevant)
 
@@ -594,7 +630,7 @@ data_raters <- data_reextracted %>%
 
 data_raters %>%
   mutate(agreement = ifelse(clinically_relevant_criterion_rater_1 == clinically_relevant_criterion_rater_2, TRUE, FALSE)) %>%
-  summarize(interrater_percent_agreement = round(mean(agreement, na.rm = TRUE), 1)) %>%
+  summarize(interrater_percent_agreement = round_half_up(mean(agreement, na.rm = TRUE), 1)) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
   
@@ -602,16 +638,18 @@ kappa2(data_raters, "unweighted")
 
 ```
 
-## Exclude non-clincially relevant and problematic
+### New meta analysis
+
+Excluding non-clinically relevant and problematic
 
 Details of the meta-analytic strategy, which used more up to date methods than Vahey et al.:
 
-- Weighting by inverse variance rather than sample size, as sample size provides a poorer proxy of measurement error. this is now more standard practice in meta-analysis.
+- Weighting by inverse variance rather than sample size, as sample size provides a poorer proxy of measurement error. This is now more standard practice in meta-analysis.
 - Fishers r-to-z transformations to deal with ceiling effects on confidence intervals. 
 - REML estimator function.
-- Multilevel meta-analysis model rather than weighted-averaging of effect sizes (random intercept for source article; REF).
+- Multilevel meta-analysis model rather than weighted-averaging of effect sizes (random intercept for source article).
 
-```{r fig.height=6, fig.width=5}
+```{r fig.height=32, fig.width=7.5}
 
 # exclusions and transformations
 data_for_meta_new <- data_reextracted %>%
@@ -629,8 +667,11 @@ data_for_meta_new <- data_reextracted %>%
   dplyr::select(article, variables, yi, vi, ni, authors_include_bh) %>%
   na.omit() %>%
   group_by(article) %>%
-  mutate(es_number = row_number()) %>%
-  ungroup()
+  mutate(es_number = row_number(),
+         article_abbreviated = paste(article, es_number)) %>%
+  ungroup() %>%
+  mutate(lower = yi - sqrt(vi)*1.96,
+         upper = yi + sqrt(vi)*1.96)
 
 # fit 
 fit_new <- 
@@ -639,81 +680,187 @@ fit_new <-
          random = ~ 1 | article, 
          method = "REML", 
          data   = data_for_meta_new,
-         slab   = paste(article, es_number))
+         slab   = article_abbreviated)
 
 # save to disk for pdf plots
-write_rds(fit_new, "models/fit_new.rds")
+#write_rds(fit_new, "models/fit_new.rds")
 
-# make predictions 
-predictions_new <-
-  predict(fit_new, digits = 5) %>%
+predictions_new <- 
+  predict(fit_new) %>%
   as.data.frame() %>%
-  gather(parameter, estimate) %>%
-  mutate(parameter = dplyr::recode(parameter,
-                                   "pred" = "Meta analysed r",
-                                   "ci.lb" = "95% CI lower",
-                                   "ci.ub" = "95% CI upper",
-                                   "pi.lb" = "95% CR lower",
-                                   "pi.ub" = "95% CR upper")) %>%
-  filter(parameter != "se") %>%
-  mutate(estimate = transf.ztor(estimate)) %>%
-  round_df(2)
+  select(-se) 
 
-# caterpillar plot is more useful when k of effect sizes is large
-metafor::forest(transf.ztor(data_for_meta_new$yi), 
-                data_for_meta_new$vi,
-                xlab = substitute(paste("Pearson's ", italic('r'))),
-                subset = order(transf.ztor(data_for_meta_new$yi)),        ### order by size of yi
-                slab = NA, 
-                annotate = FALSE, ### remove study labels and annotations
-                efac = 0,                  ### remove vertical bars at end of CIs
-                pch = 19,                  ### changing point symbol to filled circle
-                col = "gray40",            ### change color of points/CIs
-                psize = 1.5,                 ### increase point size
-                cex.lab = 1, 
-                cex.axis = 1,   ### increase size of x-axis title/labels
-                lty = c("solid","blank"),  ### remove horizontal line at top of plot
-                xlim = c(-1.1, 1.1),    ### adjust horizontal plot region limits
-                at = c(-1, -.5, 0, .5, 1))        
-## draw points one more time to make them easier to see
-points(sort(transf.ztor(data_for_meta_new$yi)), 
-       nrow(data_for_meta_new):1, 
-       pch = 19, 
-       cex = 1)
-## add meta effect size
-addpoly(fit_new, 
-        mlab = "", 
-        annotate = FALSE, 
-        addcred = TRUE,
-        cex = 1)
-## add text
-text(-1, -2, "RE model", pos = 4, offset = 0, cex = 1)
+predictions_new %>%
+  mutate_all(transf.ztor) %>%
+  round_df(2) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+# plot
+data_forest_new <- data_for_meta_new %>%
+  drop_na() %>%
+  select(article_abbreviated,
+         n = ni,
+         r = yi,
+         lower,
+         upper) %>%
+  # bind_rows(tibble(article_abbreviated = "Meta",
+  #                  n = 35, # arbitrary number to make the diamond an appropriate size
+  #                  r = predictions_new$pred,
+  #                  lower = predictions_new$ci.lb,
+  #                  upper = predictions_new$ci.ub)) %>%
+  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", "Meta (credibility interval)"),
+                   n = 35, # arbitrary number to make the diamond an appropriate size
+                   r = c(predictions_new$pred, predictions_new$pred),
+                   lower = c(predictions_new$ci.lb, predictions_new$pi.lb),
+                   upper = c(predictions_new$ci.ub, predictions_new$pi.ub))) %>%
+  mutate(r = transf.ztor(r),
+         lower = transf.ztor(lower),
+         upper = transf.ztor(upper)) %>%
+  mutate(size = n/sum(n),
+         n = ifelse(str_detect(article_abbreviated, "Meta"), total_n, n),
+         article_abbreviated = fct_relevel(article_abbreviated,
+                                           "Carpenter et al. (2012) 1", "Carpenter et al. (2012) 10", 
+                                           "Carpenter et al. (2012) 11", "Carpenter et al. (2012) 12", "Carpenter et al. (2012) 13", 
+                                           "Carpenter et al. (2012) 14", "Carpenter et al. (2012) 15", "Carpenter et al. (2012) 16", 
+                                           "Carpenter et al. (2012) 17", "Carpenter et al. (2012) 18", "Carpenter et al. (2012) 19", 
+                                           "Carpenter et al. (2012) 2", "Carpenter et al. (2012) 20", "Carpenter et al. (2012) 3", 
+                                           "Carpenter et al. (2012) 4", "Carpenter et al. (2012) 5", "Carpenter et al. (2012) 6", 
+                                           "Carpenter et al. (2012) 7", "Carpenter et al. (2012) 8", "Carpenter et al. (2012) 9", 
+                                           "Dawson et al. (2009) 1", "Dawson et al. (2009) 2", "Dawson et al. (2009) 3", 
+                                           "Dawson et al. (2009) 4", "Dawson et al. (2009) 5", "Dawson et al. (2009) 6", 
+                                           "Hussey & Barnes-Holmes (2012) 1", "Hussey & Barnes-Holmes (2012) 10", 
+                                           "Hussey & Barnes-Holmes (2012) 11", "Hussey & Barnes-Holmes (2012) 12", 
+                                           "Hussey & Barnes-Holmes (2012) 13", "Hussey & Barnes-Holmes (2012) 14", 
+                                           "Hussey & Barnes-Holmes (2012) 15", "Hussey & Barnes-Holmes (2012) 16", 
+                                           "Hussey & Barnes-Holmes (2012) 17", "Hussey & Barnes-Holmes (2012) 18", 
+                                           "Hussey & Barnes-Holmes (2012) 19", "Hussey & Barnes-Holmes (2012) 2", 
+                                           "Hussey & Barnes-Holmes (2012) 20", "Hussey & Barnes-Holmes (2012) 21", 
+                                           "Hussey & Barnes-Holmes (2012) 22", "Hussey & Barnes-Holmes (2012) 23", 
+                                           "Hussey & Barnes-Holmes (2012) 24", "Hussey & Barnes-Holmes (2012) 25", 
+                                           "Hussey & Barnes-Holmes (2012) 26", "Hussey & Barnes-Holmes (2012) 27", 
+                                           "Hussey & Barnes-Holmes (2012) 28", "Hussey & Barnes-Holmes (2012) 29", 
+                                           "Hussey & Barnes-Holmes (2012) 3", "Hussey & Barnes-Holmes (2012) 30", 
+                                           "Hussey & Barnes-Holmes (2012) 4", "Hussey & Barnes-Holmes (2012) 5", 
+                                           "Hussey & Barnes-Holmes (2012) 6", "Hussey & Barnes-Holmes (2012) 7", 
+                                           "Hussey & Barnes-Holmes (2012) 8", "Hussey & Barnes-Holmes (2012) 9", 
+                                           "Nicholson & Barnes-Holmes (2012b) 1", "Nicholson & Barnes-Holmes (2012b) 10", 
+                                           "Nicholson & Barnes-Holmes (2012b) 2", "Nicholson & Barnes-Holmes (2012b) 3", 
+                                           "Nicholson & Barnes-Holmes (2012b) 4", "Nicholson & Barnes-Holmes (2012b) 5", 
+                                           "Nicholson & Barnes-Holmes (2012b) 6", "Nicholson & Barnes-Holmes (2012b) 7", 
+                                           "Nicholson & Barnes-Holmes (2012b) 8", "Nicholson & Barnes-Holmes (2012b) 9", 
+                                           "Nicholson, Dempsey et al. (2014) 1", "Nicholson, Dempsey et al. (2014) 10", 
+                                           "Nicholson, Dempsey et al. (2014) 11", "Nicholson, Dempsey et al. (2014) 12", 
+                                           "Nicholson, Dempsey et al. (2014) 13", "Nicholson, Dempsey et al. (2014) 14", 
+                                           "Nicholson, Dempsey et al. (2014) 15", "Nicholson, Dempsey et al. (2014) 16", 
+                                           "Nicholson, Dempsey et al. (2014) 17", "Nicholson, Dempsey et al. (2014) 18", 
+                                           "Nicholson, Dempsey et al. (2014) 19", "Nicholson, Dempsey et al. (2014) 2", 
+                                           "Nicholson, Dempsey et al. (2014) 20", "Nicholson, Dempsey et al. (2014) 21", 
+                                           "Nicholson, Dempsey et al. (2014) 22", "Nicholson, Dempsey et al. (2014) 3", 
+                                           "Nicholson, Dempsey et al. (2014) 4", "Nicholson, Dempsey et al. (2014) 5", 
+                                           "Nicholson, Dempsey et al. (2014) 6", "Nicholson, Dempsey et al. (2014) 7", 
+                                           "Nicholson, Dempsey et al. (2014) 8", "Nicholson, Dempsey et al. (2014) 9", 
+                                           "Nicholson, McCourt et al. (2013) 1", "Nicholson, McCourt et al. (2013) 10", 
+                                           "Nicholson, McCourt et al. (2013) 2", "Nicholson, McCourt et al. (2013) 3", 
+                                           "Nicholson, McCourt et al. (2013) 4", "Nicholson, McCourt et al. (2013) 5", 
+                                           "Nicholson, McCourt et al. (2013) 6", "Nicholson, McCourt et al. (2013) 7", 
+                                           "Nicholson, McCourt et al. (2013) 8", "Nicholson, McCourt et al. (2013) 9", 
+                                           "Timko et al. (2010; Study 1) 1", "Timko et al. (2010; Study 1) 10", 
+                                           "Timko et al. (2010; Study 1) 11", "Timko et al. (2010; Study 1) 12", 
+                                           "Timko et al. (2010; Study 1) 13", "Timko et al. (2010; Study 1) 14", 
+                                           "Timko et al. (2010; Study 1) 15", "Timko et al. (2010; Study 1) 16", 
+                                           "Timko et al. (2010; Study 1) 17", "Timko et al. (2010; Study 1) 18", 
+                                           "Timko et al. (2010; Study 1) 19", "Timko et al. (2010; Study 1) 2", 
+                                           "Timko et al. (2010; Study 1) 20", "Timko et al. (2010; Study 1) 21", 
+                                           "Timko et al. (2010; Study 1) 22", "Timko et al. (2010; Study 1) 23", 
+                                           "Timko et al. (2010; Study 1) 24", "Timko et al. (2010; Study 1) 25", 
+                                           "Timko et al. (2010; Study 1) 26", "Timko et al. (2010; Study 1) 27", 
+                                           "Timko et al. (2010; Study 1) 28", "Timko et al. (2010; Study 1) 29", 
+                                           "Timko et al. (2010; Study 1) 3", "Timko et al. (2010; Study 1) 30", 
+                                           "Timko et al. (2010; Study 1) 31", "Timko et al. (2010; Study 1) 32", 
+                                           "Timko et al. (2010; Study 1) 4", "Timko et al. (2010; Study 1) 5", 
+                                           "Timko et al. (2010; Study 1) 6", "Timko et al. (2010; Study 1) 7", 
+                                           "Timko et al. (2010; Study 1) 8", "Timko et al. (2010; Study 1) 9", 
+                                           "Timko et al. (2010; Study 2) 1", "Timko et al. (2010; Study 2) 10", 
+                                           "Timko et al. (2010; Study 2) 11", "Timko et al. (2010; Study 2) 12", 
+                                           "Timko et al. (2010; Study 2) 2", "Timko et al. (2010; Study 2) 3", 
+                                           "Timko et al. (2010; Study 2) 4", "Timko et al. (2010; Study 2) 5", 
+                                           "Timko et al. (2010; Study 2) 6", "Timko et al. (2010; Study 2) 7", 
+                                           "Timko et al. (2010; Study 2) 8", "Timko et al. (2010; Study 2) 9",
+                                           #"Meta"
+                                           "Meta (confidence interval)", 
+                                           "Meta (credibility interval)")) %>%
+  mutate(` ` = paste(rep(" ", 30), collapse = " ")) %>%
+  select(Article = article_abbreviated, ` `, r, lower, upper, n, size) %>%
+  mutate(r     = round_half_up(r, 2),
+         lower = round_half_up(lower, 2),
+         upper = round_half_up(upper, 2))
+
+p_new <- 
+  forestploter::forest(data       = select(data_forest_new, -size),
+                       est        = data_forest_new$r,
+                       lower      = data_forest_new$lower, 
+                       upper      = data_forest_new$upper,
+                       sizes      = 1/data_forest_new$size,
+                       # is_summary = c(rep(FALSE, nrow(data_forest_new)-1), TRUE),
+                       is_summary = c(rep(FALSE, nrow(data_forest_new)-2), TRUE, TRUE),
+                       ci_column  = 2,
+                       ref_line   = 0,
+                       theme      = custom_theme,
+                       xlim       = c(-0.7, 0.9),
+                       ticks_at   = c(-.6, -.4, -.2, 0, .2, .4, .6, .8))
+
+p_new
+
+ggplot2::ggsave(filename = "plots/forest plot new multilevel model.pdf", 
+                plot = p_new,
+                device = "pdf",
+                width = 7.5, 
+                height = 32, 
+                units = "in")
 
 # summarize results
-meta_effect_new <- 
-  paste0("k = ", fit_new$k, ", r = ", predictions_new$estimate[1],
-         ", 95% CI [", predictions_new$estimate[2], ", ", predictions_new$estimate[3], "]",
-         ", 95% CR [", predictions_new$estimate[4], ", ", predictions_new$estimate[5], "]",
-         ", p = ", signif(2*pnorm(-abs(fit_new$zval)), digits = 1))  # exact p value from z score
+predictions_new_backtransformed <- predictions_new %>%
+  mutate_all(transf.ztor) %>%
+  round_df(2)
 
-# NB I2 is not trivial for multilevel models
-meta_heterogeneity_new <-
-  paste0("Q(df = ", fit_new$k - 1, ") = ", round(fit_new$QE, 2),
-         ", p = ", ifelse(fit_new$QEp < 0.0001, "< .0001", as.character(round(fit_new$QEp, 4))),
-         ", tau^2 = ", round(fit_new$tau2, 2))
+meta_effect_new <- 
+  paste0("k = ", fit_new$k, ", r = ", predictions_new_backtransformed$pred,
+         ", 95% CI [", predictions_new_backtransformed$ci.lb, ", ", predictions_new_backtransformed$ci.ub, "]",
+         ", 95% CR [", predictions_new_backtransformed$pi.lb, ", ", predictions_new_backtransformed$pi.ub, "]",
+         ", p = ", signif(2*pnorm(-abs(fit_new$zval)), digits = 1))  # exact p value from z score
 
 ```
 
 Meta effect: `r meta_effect_new`.
 
-Heterogeneity: `r meta_heterogeneity_new`.
+### Power analyses
 
-- Note that this result is still known to be biased upward. Some papers were explicit that they reported only significant results in sufficient detail to calculate effect sizes (e.g., Parling et al., 2012).
+Less appropriate one-tailed:
 
-## Updated power analyses
+- Minimum sample size using r = `r predictions_new_backtransformed$pred` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, *one*-tailed. 
+- Minimum sample size using lower CI r = `r predictions_new_backtransformed$ci.lb` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$ci.lb, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants to have 80% power, alpha = .05, *one*-tailed.
+- This suggested sample sizes are more than `r round_half_up(ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "greater")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 0)` times that recommended by Vahey et al.
 
-- Minimum sample size using r = `r predictions_new$estimate[1]` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, *two*-tailed. 
-- Minimum sample size using lower CI r = `r predictions_new$estimate[2]` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new$estimate[2], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, *two*-tailed.
-- This suggested sample sizes are more than `r round(ceiling(pwr.r.test(n = NULL, r = predictions_new$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 0)` times that recommended by Vahey et al.
+More appropriate two-tailed:
+
+- Minimum sample size using r = `r predictions_new_backtransformed$pred` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, *two*-tailed. 
+- Minimum sample size using lower CI r = `r predictions_new_backtransformed$ci.lb` = `r ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$ci.lb, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants to have 80% power, alpha = .05, *two*-tailed.
+- This suggested sample sizes are more than `r round_half_up(ceiling(pwr.r.test(n = NULL, r = predictions_new_backtransformed$pred, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)/ceiling(pwr.r.test(n = NULL, r = .45, sig.level = 0.05, power = 0.8, alternative = "greater")$n), 0)` times that recommended by Vahey et al.
+
+# Conceptual critiques
+
+## Inclusion strategy of effects that "could have been predicted"
+
+## Analyses of the IRAP as the DV rather than the DV
+
+Incompatible with the idea that the IRAP can be used for clinical assessment. This would require that IRAP tells us something about individuals' clinical status/group/location on a continuum/etc (i.e., IRAP effects -> individuals). Most of the effect sizes come from analyses that assume the opposite, i.e., that individuals' clinical status/group/location on a continuum/etc. can tell us about their IRAP effects (i.e., individuals -> IRAP effects). 
+
+Even this new meta-analysis is mostly informative only for researchers wishing to study IRAP effects, rather than study individuals using the IRAP.
+
+Similar conceptual criticisms have been made elsewhere. Schmall et al (2016) reported results from a very large study which concluded that hippocampal volume ‘robustly discriminate[d] MDD patients from healthy controls’ (p. 1). However, Fried & Kievit (2016) pointed out that this was not the case: depression status predicted a detectable difference in mean hippocampal volume, but hippocampal volume was very weakly associated with indivdiuals' depression status. They point out that Schmall et al had reversed their analysis' DV and IV when making conclusions. This error is equally applicable to Vahey et al: even if their meta analysis was computationally replicable, its conclusions would still not support their claim that the meta ansysis “demonstrates the potential of the IRAP as a tool for clinical assessment” (p. 64). Rather, it would demonstrate that known clinical status (etc) has potential as a tool for the assessment of IRAP scores.
+
+
+
 
 
