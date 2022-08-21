@@ -1,0 +1,120 @@
+---
+title: "Translation of Field's 'h_s syntax.sps' script into R"
+author: "Ian Hussey"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    highlight: haddock
+    theme: flatly
+    toc: yes
+    toc_float: yes
+---
+
+```{r, include=FALSE}
+
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE)
+
+```
+
+# Data and dependencies
+
+```{r}
+
+library(tidyverse)
+library(janitor)
+
+data_input <- read.csv("../../../data/data_vahey_et_al_2015.csv") %>%
+  select(mean_r_forest_plot_numeric, n_forest_plot) %>%
+  drop_na()
+
+rxy <- data_input$mean_r_forest_plot_numeric
+n <- data_input$n_forest_plot
+
+rx <- rep(1, length(rxy))
+ry <- rep(1, length(rxy))
+
+```
+
+# Translation of Field's script
+
+```{r}
+
+k <- length(rxy)
+
+#total sample size.
+totaln <- sum(n)
+
+#sample size weighed average correlation.
+rav <- sum(n*rxy)/sum(n)
+
+#observed variability in correlations (variance across studies; total variability)
+srsq <- sum(n*((rxy-rav)^2))/sum(n)
+
+#variability attributable to sampling error
+sevar <- sum(n*((1-rav^2)^2)/(n-1))/sum(n)
+
+#variability, after sampling error variance has been removed
+corrvar <- srsq - sevar
+
+#% of total variability attributable to sampling error
+accfor <- (sevar/srsq)*100
+
+sster <- sqrt(sevar)
+
+#computing 95% confidence intervals
+lci <- rav - 1.96*sster
+hci <- rav + 1.96*sster
+
+#computing the compound attenuation factor
+anakv <- rx*ry
+akor <- sqrt(anakv)
+
+#computing weights - each study is weighted by the sample size, as well as the amount of error associated with that study
+w <- anakv*n
+
+ccorr <- rxy/akor
+
+#corr corrected for measure error
+cocorr <- sum(w*ccorr)/sum(w)
+
+#all observed variability in corrected corr
+varccor <- sum(w*((ccorr-cocorr)^2))/sum(w)
+
+#variability due to artifacts
+cose <- (((1-rav^2)^2)/(n-1))/anakv
+avcose <- sum(w*cose)/sum(w)
+
+#variability in corrected correlations, after removing variability due to artifacts
+clvar <- varccor - avcose
+
+#if the variance in corrected correlations has a negative value, it indicates that the variance of corrected correlation is 0
+#(the variance attributable to artifacts is actually grater than the observed variance).
+#do if - also, because the sqrt can not be obtained for negative values.
+
+if (clvar >=0){
+  #sd of corr correl (artifacts removed).
+  sdcoco <- sqrt(clvar)
+  
+  #credibility intervals. *95% = 1.96
+  #credibility intervals use SD, confidence intervals use SE
+  
+  novcrl <- cocorr - 1.96*sdcoco
+  novcrh <- cocorr + 1.96*sdcoco
+  
+  #variance accounted for by artifacts.
+  pervar <- (avcose/varccor)*100
+}
+
+if(clvar < 0){
+  sdcoco <- 0
+  novcrl <- cocorr
+  novcrh <- cocorr
+  pervar <- (avcose/varccor)*100
+}
+
+```
+
+meta r = `r round_half_up(rav, 2)`, 95% CI [`r round_half_up(lci, 2)`, `r round_half_up(hci, 2)`], 95% CR [`r round_half_up(novcrl, 2)`, `r round_half_up(novcrh, 2)`]
+
