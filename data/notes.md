@@ -2,7 +2,7 @@
 
 ## Vahey, Nicholson & Barnes-Holmes 2015 supplimentary materials.xslx
 
-Supplementary Online materials available with the Vahey et al 2015 manuscript
+Supplementary Online materials available with the Vahey et al 2015 manuscript.
 
 ## data_vahey_et_al_2015.csv 
 
