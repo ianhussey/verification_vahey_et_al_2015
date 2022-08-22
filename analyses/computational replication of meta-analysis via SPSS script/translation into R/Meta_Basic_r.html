@@ -1688,105 +1688,53 @@ div.tocify {
 <h1 class="title toc-ignore">Translation of Field’s ‘Meta_Basic_r.sps’
 script into R</h1>
 <h4 class="author">Ian Hussey</h4>
-<h4 class="date">21 August, 2022</h4>
+<h4 class="date">22 August, 2022</h4>
 
 </div>
 
 
+<p>Note that Field’s script implements three meta analysis approaches:
+fixed effects, Hedges and colleagues method, and the Hunter-Schmidt
+method (without correlation deattenuations).</p>
+<p>I translated only the H&amp;S method below into R from Field’s SPSS
+code.</p>
 <div id="data-and-dependencies" class="section level1">
 <h1>Data and dependencies</h1>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(janitor)</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data_input <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../data/data_vahey_et_al_2015.csv&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>data_input <span class="ot">&lt;-</span> <span class="fu">read.csv</span>(<span class="st">&quot;../../../data/data_vahey_et_al_2015.csv&quot;</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(mean_r_forest_plot_numeric, n_forest_plot) <span class="sc">%&gt;%</span></span>
 <span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">drop_na</span>()</span>
 <span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
 <span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>r <span class="ot">&lt;-</span> data_input<span class="sc">$</span>mean_r_forest_plot_numeric</span>
 <span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> data_input<span class="sc">$</span>n_forest_plot</span></code></pre></div>
 </div>
-<div id="translation-of-fields-script" class="section level1">
-<h1>Translation of Field’s script</h1>
-<p>Note that Field’s script implements three meta analysis approaches:
-fixed effects, Hedges and colleagues method, and the Hunter-Schmidt
-method (without correlation deattenuations).</p>
-<p>I translated only the H&amp;S method below into R from Field’s SPSS
-code.</p>
-<div id="as-implemented-in-fields-script" class="section level2">
-<h2>As implemented in Field’s script</h2>
+<div id="as-implemented-in-fields-script" class="section level1">
+<h1>As implemented in Field’s script</h1>
 <p>Only for Hunter-Schmidt RE model, not Hedges or fixed effects</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># get number of studies (k) from number of rows in r-vector</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>k <span class="ot">=</span> <span class="fu">length</span>(r)</span>
 <span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co"># obtain adjusted values of r  (Overton, 1998, page 358)</span></span>
-<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ar <span class="ot">=</span> r <span class="sc">-</span> (r<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>r<span class="sc">^</span><span class="dv">2</span>))<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span>(n<span class="dv">-3</span>))</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>ar <span class="ot">=</span> r <span class="sc">-</span> (r<span class="sc">*</span>(<span class="dv">1</span><span class="sc">-</span>r<span class="sc">^</span><span class="dv">2</span>))<span class="sc">/</span>(<span class="dv">2</span><span class="sc">*</span>(n<span class="dv">-3</span>))     <span class="co"># unnumbered equation between equations 8 and 9 in Field &amp; Gillett (2010)</span></span>
 <span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># # create zr, Fisher&#39;s z-transformation of r</span></span>
-<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co"># zr = 0.5*log((1+r)/(1-r))</span></span>
-<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># # zr has variance = 1/(n-3)  (Field, 2001, page 164)</span></span>
-<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="co"># v = 1/(n-3)</span></span>
-<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a><span class="co"># # create fixed-effects weight vector</span></span>
-<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># w = 1/v</span></span>
-<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="co"># # sum weights</span></span>
-<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="co"># sw = sum(w)</span></span>
-<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># # calculate c  (Hedges &amp; Vevea, 1998, equation 10)</span></span>
-<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co"># c = sw - t(w)*w/sw</span></span>
-<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="co"># # calculate Q  (H &amp; V equation 7)</span></span>
-<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a><span class="co"># q = t(w)*zr^2 - (t(w)*zr)^2/sw</span></span>
-<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># # variance component tau is set equal to zero if Q &lt; k-1,  and to  (q-k+1)/c  otherwise</span></span>
-<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="co"># tau = max(c(0, (q-k+1)/c))</span></span>
-<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a><span class="co"># # variance of effect size under random-effects model</span></span>
-<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co"># vt = v + tau</span></span>
-<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="co"># # random-effects weight vector (H &amp; V equation 13)</span></span>
-<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a><span class="co"># wt = 1/vt</span></span>
-<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="co"># # sum weights</span></span>
-<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a><span class="co"># swt = sum(wt)</span></span>
-<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a><span class="co"># # calculate Q for R-E</span></span>
-<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a><span class="co"># qe = t(wt)*zr^2 - (t(wt)*zr)^2/swt</span></span>
-<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a><span class="co"># # RE:</span></span>
-<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="co"># mean = t(wt)*zr/swt</span></span>
-<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a><span class="co"># # calculate standard errors and confidence intervals for means</span></span>
-<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="co"># sem = sqrt(1/swt)</span></span>
-<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a><span class="co"># </span></span>
-<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="co"># ci = c(mean - 1.96*sem, mean + 1.96*sem)</span></span>
-<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a><span class="co"># # convert means and confidence intervals (based on zr) back to r</span></span>
-<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a><span class="co"># rmean = (exp(2*mean)-1)/(exp(2*mean)+1)</span></span>
-<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a><span class="co"># #rci = (exp(2*ci)-1)/(exp(2*ci)+1) # possibly incorrectly converted</span></span>
-<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a><span class="co"># zscore = abs(mean/sem)</span></span>
-<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a><span class="co"># pz = 2*(1 - pnorm(zscore))</span></span>
-<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="co"># Hunter-Schmidt random-effects analysis</span></span>
-<span id="cb2-43"><a href="#cb2-43" aria-hidden="true" tabindex="-1"></a>rav <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>ar)<span class="sc">/</span><span class="fu">sum</span>(n)</span>
-<span id="cb2-44"><a href="#cb2-44" aria-hidden="true" tabindex="-1"></a>sr2 <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>((ar<span class="sc">-</span>rav)<span class="sc">^</span><span class="dv">2</span>))<span class="sc">/</span><span class="fu">sum</span>(n)</span>
-<span id="cb2-45"><a href="#cb2-45" aria-hidden="true" tabindex="-1"></a>se2 <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>rav<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span>((<span class="fu">sum</span>(n)<span class="sc">/</span>k)<span class="sc">-</span><span class="dv">1</span>)</span>
-<span id="cb2-46"><a href="#cb2-46" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-47"><a href="#cb2-47" aria-hidden="true" tabindex="-1"></a><span class="co"># variance in population correlations Field &amp; Gillett (2010) equation 4</span></span>
-<span id="cb2-48"><a href="#cb2-48" aria-hidden="true" tabindex="-1"></a>vrho <span class="ot">=</span> sr2<span class="sc">-</span>se2</span>
-<span id="cb2-49"><a href="#cb2-49" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-50"><a href="#cb2-50" aria-hidden="true" tabindex="-1"></a><span class="co"># NB Field did not add a check for positive sdrho but I add one here</span></span>
-<span id="cb2-51"><a href="#cb2-51" aria-hidden="true" tabindex="-1"></a><span class="co"># sdrho = sqrt(vrho)</span></span>
-<span id="cb2-52"><a href="#cb2-52" aria-hidden="true" tabindex="-1"></a><span class="co"># cil = rav - 1.96*sdrho</span></span>
-<span id="cb2-53"><a href="#cb2-53" aria-hidden="true" tabindex="-1"></a><span class="co"># ciu = rav + 1.96*sdrho</span></span>
-<span id="cb2-54"><a href="#cb2-54" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-55"><a href="#cb2-55" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(vrho <span class="sc">&gt;</span> <span class="dv">0</span>){</span>
-<span id="cb2-56"><a href="#cb2-56" aria-hidden="true" tabindex="-1"></a>  sdrho <span class="ot">=</span> <span class="fu">sqrt</span>(vrho)</span>
-<span id="cb2-57"><a href="#cb2-57" aria-hidden="true" tabindex="-1"></a>  cil <span class="ot">=</span> rav <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho</span>
-<span id="cb2-58"><a href="#cb2-58" aria-hidden="true" tabindex="-1"></a>  ciu <span class="ot">=</span> rav <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho</span>
-<span id="cb2-59"><a href="#cb2-59" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb2-60"><a href="#cb2-60" aria-hidden="true" tabindex="-1"></a>  cil <span class="ot">=</span> <span class="cn">NA</span></span>
-<span id="cb2-61"><a href="#cb2-61" aria-hidden="true" tabindex="-1"></a>  ciu <span class="ot">=</span> <span class="cn">NA</span></span>
-<span id="cb2-62"><a href="#cb2-62" aria-hidden="true" tabindex="-1"></a>}</span>
-<span id="cb2-63"><a href="#cb2-63" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-64"><a href="#cb2-64" aria-hidden="true" tabindex="-1"></a><span class="co"># chi = sum((n-1)*(ar-rav)^2)/(1-rav^2)^2</span></span>
-<span id="cb2-65"><a href="#cb2-65" aria-hidden="true" tabindex="-1"></a><span class="co"># chisig = 1 - pchisq(chi, k-1)</span></span>
-<span id="cb2-66"><a href="#cb2-66" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb2-67"><a href="#cb2-67" aria-hidden="true" tabindex="-1"></a><span class="co"># print(&#39;Chi2&#39;)</span></span>
-<span id="cb2-68"><a href="#cb2-68" aria-hidden="true" tabindex="-1"></a><span class="co"># chi</span></span>
-<span id="cb2-69"><a href="#cb2-69" aria-hidden="true" tabindex="-1"></a><span class="co"># print(&#39;p&#39;)</span></span>
-<span id="cb2-70"><a href="#cb2-70" aria-hidden="true" tabindex="-1"></a><span class="co"># chisig</span></span>
-<span id="cb2-71"><a href="#cb2-71" aria-hidden="true" tabindex="-1"></a><span class="co"># print(&#39;df&#39;)</span></span>
-<span id="cb2-72"><a href="#cb2-72" aria-hidden="true" tabindex="-1"></a><span class="co"># (k-1)</span></span></code></pre></div>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co"># Hunter-Schmidt random-effects analysis</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>rav <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>ar)<span class="sc">/</span><span class="fu">sum</span>(n)</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>sr2 <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>((ar<span class="sc">-</span>rav)<span class="sc">^</span><span class="dv">2</span>))<span class="sc">/</span><span class="fu">sum</span>(n)  <span class="co"># equation 2 in Field &amp; Gillett (2010)</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>se2 <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>rav<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span>((<span class="fu">sum</span>(n)<span class="sc">/</span>k)<span class="sc">-</span><span class="dv">1</span>)  <span class="co"># equation 3 in Field &amp; Gillett (2010)</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co"># variance in population correlations </span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>vrho <span class="ot">=</span> sr2 <span class="sc">-</span> se2     <span class="co"># equation 4 in Field &amp; Gillett (2010)</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a><span class="co"># NB Meta_Basic_r.sps does not contain this conditional to set SD to 0 if SE is &lt;=0, but h_s_syntax.sps does. I&#39;ve therefore added it here.</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(vrho <span class="sc">&gt;</span> <span class="dv">0</span>){</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>  sdrho <span class="ot">=</span> <span class="fu">sqrt</span>(vrho)</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>  sdrho <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>cr_lower <span class="ot">=</span> rav <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho   <span class="co"># equation 5 in Field &amp; Gillett (2010)</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>cr_upper <span class="ot">=</span> rav <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho</span></code></pre></div>
 <p>Sample Correlation Variance = 0.007</p>
 <ul>
 <li>Note that this differs from that reported by Vahey et al. (2015),
@@ -1799,38 +1747,39 @@ i.e., .006.</li>
 <li>Note that because this value is negative, confidence intervals
 cannot be calculated.</li>
 </ul>
-<p>meta r = 0.46, 95% CI [NA, NA]</p>
+<p>meta r = 0.46, 95% CR [0.46, 0.46]</p>
 </div>
-<div id="removing-fields-application-of-overtons-correction" class="section level2">
-<h2>Removing Field’s application of Overton’s correction</h2>
+<div id="removing-fields-application-of-overtons-correction" class="section level1">
+<h1>Removing Field’s application of Overton’s correction</h1>
 <p>I realised that Field &amp; Gillett (2010), in defining the three
 different methods of meta-analysis that they discussed, state that
 <em>only</em> the Hedges’ method involves Fisher’s r-to-z
 transformations and backtransformations (equations 7 and 8), and the use
 of Overton’s transformation prior to r-to-z to debias the z scores
-(equation 9). However, Field’s implements of these methods (i.e.,
-“Meta_Basic_r.sps” and the above translation of it into R) incorrectly
-also apply the Overton transformation to the correlations used in the
-Hunter &amp; Schmidt style meta analysis (i.e., without using r-to-z
-transformations). Below, I therefore attempt to reproduce Vahey et al.’s
-(2015) results by modifying Field’s translated code to remove these
-transformations.</p>
+(unnumbered equation in text between equations 8 and 9). However,
+Field’s implements of these methods (i.e., “Meta_Basic_r.sps” and the
+above translation of it into R) incorrectly also apply the Overton
+transformation to the correlations used in the Hunter &amp; Schmidt
+style meta analysis (i.e., without using r-to-z transformations). Below,
+I therefore attempt to reproduce Vahey et al.’s (2015) results by
+modifying Field’s translated code to remove these transformations.</p>
 <div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Hunter-Schmidt random-effects analysis</span></span>
 <span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>rav_nooverton <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>r)<span class="sc">/</span><span class="fu">sum</span>(n)</span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sr2_nooverton <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>((r<span class="sc">-</span>rav_nooverton)<span class="sc">^</span><span class="dv">2</span>))<span class="sc">/</span><span class="fu">sum</span>(n)</span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>se2_nooverton <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>rav_nooverton<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span>((<span class="fu">sum</span>(n)<span class="sc">/</span>k)<span class="sc">-</span><span class="dv">1</span>)</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>sr2_nooverton <span class="ot">=</span> <span class="fu">sum</span>(n<span class="sc">*</span>((r<span class="sc">-</span>rav_nooverton)<span class="sc">^</span><span class="dv">2</span>))<span class="sc">/</span><span class="fu">sum</span>(n)  <span class="co"># equation 2 in Field &amp; Gillett (2010)</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>se2_nooverton <span class="ot">=</span> (<span class="dv">1</span><span class="sc">-</span>rav_nooverton<span class="sc">^</span><span class="dv">2</span>)<span class="sc">^</span><span class="dv">2</span><span class="sc">/</span>((<span class="fu">sum</span>(n)<span class="sc">/</span>k)<span class="sc">-</span><span class="dv">1</span>)  <span class="co"># equation 3 in Field &amp; Gillett (2010)</span></span>
 <span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># variance in population correlations Field &amp; Gillett (2010) equation 4</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>vrho_nooverton <span class="ot">=</span> sr2_nooverton<span class="sc">-</span>se2_nooverton</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co"># variance in population correlations </span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>vrho_nooverton <span class="ot">=</span> sr2_nooverton <span class="sc">-</span> se2_nooverton   <span class="co"># equation 4 in Field &amp; Gillett (2010)</span></span>
 <span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(vrho_nooverton <span class="sc">&gt;</span> <span class="dv">0</span>){</span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>  sdrho_nooverton <span class="ot">=</span> <span class="fu">sqrt</span>(vrho_nooverton)</span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  cil_nooverton <span class="ot">=</span> rav <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho_nooverton</span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>  ciu_nooverton <span class="ot">=</span> rav <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho_nooverton</span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>  cil_nooverton <span class="ot">=</span> <span class="cn">NA</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>  ciu_nooverton <span class="ot">=</span> <span class="cn">NA</span></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>}</span></code></pre></div>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co"># NB Meta_Basic_r.sps does not contain this conditional to set SD to 0 if SE is &lt;=0, but h_s_syntax.sps does. I&#39;ve therefore added it here.</span></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="cf">if</span>(vrho_nooverton <span class="sc">&gt;</span> <span class="dv">0</span>){</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>  sdrho_nooverton <span class="ot">=</span> <span class="fu">sqrt</span>(vrho_nooverton)</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>} <span class="cf">else</span> {</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>  sdrho_nooverton <span class="ot">=</span> <span class="dv">0</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>}</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>cr_lower_nooverton <span class="ot">=</span> rav_nooverton <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho_nooverton   <span class="co"># equation 5 in Field &amp; Gillett (2010)</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>cr_upper_nooverton <span class="ot">=</span> rav_nooverton <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span>sdrho_nooverton</span></code></pre></div>
 <p>Sample Correlation Variance = 0.007</p>
 <ul>
 <li>Note that this differs from that reported by Vahey et al. (2015),
@@ -1843,70 +1792,7 @@ i.e., .006.</li>
 <li>Note that because this value is negative, confidence intervals
 cannot be calculated.</li>
 </ul>
-<p>meta r = 0.47, 95% CI [NA, NA]</p>
-</div>
-</div>
-<div id="additions" class="section level1">
-<h1>Additions</h1>
-<div id="confidence-interval" class="section level2">
-<h2>Confidence interval</h2>
-<p>Confidence intervals are more commonly calculated (i.e., in non
-psychometric meta analyses) as simply estimate ± 1.96 * se. I try that
-here on the basis that perhaps Vahey et al defaulted to it when Field’s
-script (above) could not calculate CIs by the H&amp;S method. NB these
-use the non-overton transformed values.</p>
-<div id="using-overton-correction" class="section level3">
-<h3>Using Overton correction</h3>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>cil_se <span class="ot">=</span> rav <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(se2)</span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>ciu_se <span class="ot">=</span> rav <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(se2)</span></code></pre></div>
-<p>95% CR [0.19, 0.73]</p>
-</div>
-<div id="without-overton-correction" class="section level3">
-<h3>Without Overton correction</h3>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a>cil_nooverton_se <span class="ot">=</span> rav_nooverton <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(se2_nooverton)</span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a>ciu_nooverton_se <span class="ot">=</span> rav_nooverton <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(se2_nooverton)</span></code></pre></div>
-<p>95% CR [0.2, 0.74]</p>
-</div>
-</div>
-<div id="credibility-interval" class="section level2">
-<h2>Credibility interval</h2>
-<p>Vahey et al. (2015) reported 95% CR [.23, .67].</p>
-<p>Whereas the “h_s syntax.sps” file calculates a credibility interval,
-the “Meta_Basic_r.sps” file does not.</p>
-<p>However, such an interval can be calculated using the same formula as
-in the “h_s syntax.sps” file.</p>
-<div id="using-fields-h_s-syntax.sps-formula" class="section level3">
-<h3>Using Field’s “h_s syntax.sps” formula</h3>
-<div id="with-overton-correction" class="section level4">
-<h4>With Overton correction</h4>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># CR using s_r^2 calculated above </span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>crl <span class="ot">=</span> rav <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(sr2)</span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>cru <span class="ot">=</span> rav <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(sr2)</span></code></pre></div>
-<p>95% CR [0.3, 0.62]</p>
-</div>
-<div id="without-overton-correction-1" class="section level4">
-<h4>Without Overton correction</h4>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># CR using s_r^2 calculated above</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>crl_nooverton <span class="ot">=</span> rav_nooverton <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(sr2_nooverton)</span>
-<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>cru_nooverton <span class="ot">=</span> rav_nooverton <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(sr2_nooverton)</span></code></pre></div>
-<p>95% CR [0.31, 0.63]</p>
-</div>
-</div>
-<div id="attempt-to-reproduce-vahey-et-al.s-2015-95-cr-from-their-reported-s_r2" class="section level3">
-<h3>Attempt to reproduce Vahey et al.’s (2015) 95% CR from their
-reported <span class="math inline">\(s_r^2\)</span></h3>
-<p>As a third attempt at verification, I too one step back and tried to
-reproduce their 95% CR from their reported <span class="math inline">\(s_r^2\)</span> (0.006) and <span class="math inline">\(\overline{r}\)</span> (.45).</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># s_r^2 (0.006) and r_bar (.45) as reported in Vahey et al. 2015</span></span>
-<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>crl_verified <span class="ot">=</span> .<span class="dv">45</span> <span class="sc">-</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(<span class="fl">0.006</span>)</span>
-<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>cru_verified <span class="ot">=</span> .<span class="dv">45</span> <span class="sc">+</span> <span class="fl">1.96</span><span class="sc">*</span><span class="fu">sqrt</span>(<span class="fl">0.006</span>)</span></code></pre></div>
-<p>95% CR [0.3, 0.6]</p>
-<p>Following Field &amp; Gillet’s (2010) definition of a CR (equation
-5), which is consistent with Field’s implementation of the CR (see “h_s
-syntax.sps”), which Vahey reported to me in an email that he employed,
-Vahey et al.’s (2015) reported CR cannot be reproduced from their <span class="math inline">\(s_r^2\)</span> and <span class="math inline">\(\overline{r}\)</span>.</p>
-</div>
-</div>
+<p>meta r = 0.47, 95% CR [0.47, 0.47]</p>
 </div>
 
 

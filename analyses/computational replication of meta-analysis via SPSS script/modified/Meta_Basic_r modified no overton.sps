@@ -52,8 +52,8 @@ compute u = make(k,1,1).
 compute zrstar = (zr*{1,1} - u*t(mean))&/sqrt(vtilde).
 
 * Hunter-Schmidt random-effects analysis.
-compute rav = csum(n&*ar)/csum(n).
-compute sr2 = csum(n&*((ar-rav)&**2))/csum(n).
+compute rav = csum(n&*r)/csum(n).
+compute sr2 = csum(n&*((r-rav)&**2))/csum(n).
 compute se2 = (1-rav**2)**2/((csum(n)/k)-1).
 compute vrho = sr2-se2.
 

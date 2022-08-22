@@ -57,6 +57,7 @@ meta_effect_string <- function(fit, predictions){
   paste0("k = ", fit$k, ", r = ", predictions$pred,
          ", 95% CI [", predictions$ci.lb, ", ", predictions$ci.ub, "]",
          ", 95% CR [", predictions$cr.lb, ", ", predictions$cr.ub, "]",
+         ", 95% PI [", predictions$pi.lb, ", ", predictions$pi.ub, "]",
          ", p = ", signif(2*pnorm(-abs(fit$zval)), digits = 1))  # exact p value from z score
 }
 
@@ -233,31 +234,6 @@ On inspection, Field & Gillett (2010) make a distinction between the Hunter & Sc
 
 Vahey et al. (2015) do not report applying any transformations to their data. However, Vahey et al.'s (2015) individual effect sizes in their forest plot have asymmetric confidence intervals. This implies that a transformation was performed. It is therefore possible that Vahey et al. combined the two methods (and code) provided by Field & Gillett (2010). I first fit a Hunter & Schmidt method, then a combined Hunter & Schmidt and Hedges' and colleagues method.  
 
-### Hunter & Schmidt method using Field & Gillett's (2010) SPSS script
-
-See "computational replication of meta-analysis via SPSS script" folder.
-
-Summary of results:
-
-```{r}
-
-results_spss <- tibble(
-  k_studies = c(15, 15),
-  total_n = c(494, 494),
-  pred = c(.45, .4670), 
-  ci.lb = c(.40, .1955),
-  ci.ub = c(.54, .7392),
-  pi.lb = c(.23, .4674),
-  pi.ub = c(.67, .4674)
-)%>%
-  round_df(2) 
-
-results_spss %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-```
-
 ### Hunter & Schmidt method using metafor R package
 
 Information about implementation of Hunter & Schmidt-style meta-analysis in metafor from [here](http://www.metafor-project.org/doku.php/tips:hunter_schmidt_method).
@@ -297,7 +273,7 @@ predictions_reproduced <-
   predict(fit_reproduced) %>%
   as.data.frame() %>%
   select(-se) %>%
-  # cr following Field & Gillett (2010) equation 5
+  # cr following Field & Gillett (2010) equation 5, where s_r^2 == tau2 as they both estimate the variance in population correlations. e.g., see Field's script "h_s syntax.sps" which refers to this as both tau and s_r^2 depending on the meta analytic approach
   mutate(cr.lb = pred - 1.96*sqrt(fit_reproduced$tau2),
          cr.ub = pred + 1.96*sqrt(fit_reproduced$tau2))
 
@@ -387,11 +363,13 @@ Fisher's r-to-z transformation and back transformation, with HS estimator. No Ov
 ```{r}
 
 # calculate variances
-data_recalculated_variance_transformed <- 
+data_recalculated_variance_transformed <- data_vahey %>%
+  # # Overton transformation. Unnumbered equation between equations 8 and 9 in Field & Gillett (2010)
+  # mutate(mean_r_forest_plot_numeric = mean_r_forest_plot_numeric - (mean_r_forest_plot_numeric*(1-mean_r_forest_plot_numeric^2))/(2*(n_forest_plot-3))) %>% 
   escalc(measure = "ZCOR", 
          ri      = mean_r_forest_plot_numeric, 
          ni      = n_forest_plot, 
-         data    = data_vahey, 
+         data    = ., 
          vtype   = "AV",
          digits  = 10) %>%
   drop_na() %>%
@@ -414,7 +392,7 @@ predictions_reproduced_transformed <-
   predict(fit_reproduced_transformed) %>%
   as.data.frame() %>%
   select(-se) %>%
-  # cr following Field & Gillett (2010) equation 5
+  # cr following Field & Gillett (2010) equation 5, where s_r^2 == tau2 as they both estimate the variance in population correlations. e.g., see Field's script "h_s syntax.sps" which refers to this as both tau and s_r^2 depending on the meta analytic approach
   mutate(cr.lb = pred - 1.96*sqrt(fit_reproduced$tau2),
          cr.ub = pred + 1.96*sqrt(fit_reproduced$tau2))
 

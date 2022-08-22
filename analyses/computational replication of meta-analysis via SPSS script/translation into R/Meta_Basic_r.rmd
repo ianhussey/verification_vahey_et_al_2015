@@ -11,6 +11,10 @@ output:
     toc_float: yes
 ---
 
+Note that Field's script implements three meta analysis approaches: fixed effects, Hedges and colleagues method, and the Hunter-Schmidt method (without correlation deattenuations).
+
+I translated only the H&S method below into R from Field's SPSS code.
+
 ```{r, include=FALSE}
 
 knitr::opts_chunk$set(message = FALSE,
@@ -34,13 +38,7 @@ n <- data_input$n_forest_plot
 
 ```
 
-# Translation of Field's script
-
-Note that Field's script implements three meta analysis approaches: fixed effects, Hedges and colleagues method, and the Hunter-Schmidt method (without correlation deattenuations).
-
-I translated only the H&S method below into R from Field's SPSS code.
-
-## As implemented in Field's script
+# As implemented in Field's script
 
 Only for Hunter-Schmidt RE model, not Hedges or fixed effects
 
@@ -49,75 +47,25 @@ Only for Hunter-Schmidt RE model, not Hedges or fixed effects
 # get number of studies (k) from number of rows in r-vector
 k = length(r)
 # obtain adjusted values of r  (Overton, 1998, page 358)
-ar = r - (r*(1-r^2))/(2*(n-3))
-
-# # create zr, Fisher's z-transformation of r
-# zr = 0.5*log((1+r)/(1-r))
-# # zr has variance = 1/(n-3)  (Field, 2001, page 164)
-# v = 1/(n-3)
-# # create fixed-effects weight vector
-# w = 1/v
-# # sum weights
-# sw = sum(w)
-# # calculate c  (Hedges & Vevea, 1998, equation 10)
-# c = sw - t(w)*w/sw
-# # calculate Q  (H & V equation 7)
-# q = t(w)*zr^2 - (t(w)*zr)^2/sw
-# # variance component tau is set equal to zero if Q < k-1,  and to  (q-k+1)/c  otherwise
-# tau = max(c(0, (q-k+1)/c))
-# # variance of effect size under random-effects model
-# vt = v + tau
-# # random-effects weight vector (H & V equation 13)
-# wt = 1/vt
-# # sum weights
-# swt = sum(wt)
-# # calculate Q for R-E
-# qe = t(wt)*zr^2 - (t(wt)*zr)^2/swt
-
-# # RE:
-# mean = t(wt)*zr/swt
-# 
-# # calculate standard errors and confidence intervals for means
-# sem = sqrt(1/swt)
-# 
-# ci = c(mean - 1.96*sem, mean + 1.96*sem)
-# # convert means and confidence intervals (based on zr) back to r
-# rmean = (exp(2*mean)-1)/(exp(2*mean)+1)
-# #rci = (exp(2*ci)-1)/(exp(2*ci)+1) # possibly incorrectly converted
-# zscore = abs(mean/sem)
-# pz = 2*(1 - pnorm(zscore))
+ar = r - (r*(1-r^2))/(2*(n-3))     # unnumbered equation between equations 8 and 9 in Field & Gillett (2010)
 
 # Hunter-Schmidt random-effects analysis
 rav = sum(n*ar)/sum(n)
-sr2 = sum(n*((ar-rav)^2))/sum(n)
-se2 = (1-rav^2)^2/((sum(n)/k)-1)
+sr2 = sum(n*((ar-rav)^2))/sum(n)  # equation 2 in Field & Gillett (2010)
+se2 = (1-rav^2)^2/((sum(n)/k)-1)  # equation 3 in Field & Gillett (2010)
 
-# variance in population correlations Field & Gillett (2010) equation 4
-vrho = sr2-se2
+# variance in population correlations 
+vrho = sr2 - se2     # equation 4 in Field & Gillett (2010)
 
-# NB Field did not add a check for positive sdrho but I add one here
-# sdrho = sqrt(vrho)
-# cil = rav - 1.96*sdrho
-# ciu = rav + 1.96*sdrho
-
+# NB Meta_Basic_r.sps does not contain this conditional to set SD to 0 if SE is <=0, but h_s_syntax.sps does. I've therefore added it here.
 if(vrho > 0){
   sdrho = sqrt(vrho)
-  cil = rav - 1.96*sdrho
-  ciu = rav + 1.96*sdrho
 } else {
-  cil = NA
-  ciu = NA
+  sdrho = 0
 }
 
-# chi = sum((n-1)*(ar-rav)^2)/(1-rav^2)^2
-# chisig = 1 - pchisq(chi, k-1)
-
-# print('Chi2')
-# chi
-# print('p')
-# chisig
-# print('df')
-# (k-1)
+cr_lower = rav - 1.96*sdrho   # equation 5 in Field & Gillett (2010)
+cr_upper = rav + 1.96*sdrho
 
 ```
 
@@ -131,9 +79,9 @@ Estimated Variance in Population Correlations (i.e., sr2 - se2) = `r vrho`
 
 - Note that because this value is negative, confidence intervals cannot be calculated.
 
-meta r = `r round_half_up(rav, 2)`, 95% CI [`r round_half_up(cil, 2)`, `r round_half_up(ciu, 2)`]
+meta r = `r round_half_up(rav, 2)`, 95% CR [`r round_half_up(cr_lower, 2)`, `r round_half_up(cr_upper, 2)`]
 
-## Removing Field's application of Overton's correction
+# Removing Field's application of Overton's correction
 
 I realised that Field & Gillett (2010), in defining the three different methods of meta-analysis that they discussed, state that *only* the Hedges' method involves Fisher's r-to-z transformations and backtransformations (equations 7 and 8), and the use of Overton's transformation prior to r-to-z to debias the z scores (unnumbered equation in text between equations 8 and 9). However, Field's implements of these methods (i.e., "Meta_Basic_r.sps" and the above translation of it into R) incorrectly also apply the Overton transformation to the correlations used in the Hunter & Schmidt style meta analysis (i.e., without using r-to-z transformations). Below, I therefore attempt to reproduce Vahey et al.'s (2015) results by modifying Field's translated code to remove these transformations.
 
@@ -141,20 +89,21 @@ I realised that Field & Gillett (2010), in defining the three different methods 
 
 # Hunter-Schmidt random-effects analysis
 rav_nooverton = sum(n*r)/sum(n)
-sr2_nooverton = sum(n*((r-rav_nooverton)^2))/sum(n)
-se2_nooverton = (1-rav_nooverton^2)^2/((sum(n)/k)-1)
+sr2_nooverton = sum(n*((r-rav_nooverton)^2))/sum(n)  # equation 2 in Field & Gillett (2010)
+se2_nooverton = (1-rav_nooverton^2)^2/((sum(n)/k)-1)  # equation 3 in Field & Gillett (2010)
 
-# variance in population correlations Field & Gillett (2010) equation 4
-vrho_nooverton = sr2_nooverton-se2_nooverton
+# variance in population correlations 
+vrho_nooverton = sr2_nooverton - se2_nooverton   # equation 4 in Field & Gillett (2010)
 
+# NB Meta_Basic_r.sps does not contain this conditional to set SD to 0 if SE is <=0, but h_s_syntax.sps does. I've therefore added it here.
 if(vrho_nooverton > 0){
   sdrho_nooverton = sqrt(vrho_nooverton)
-  cil_nooverton = rav - 1.96*sdrho_nooverton
-  ciu_nooverton = rav + 1.96*sdrho_nooverton
 } else {
-  cil_nooverton = NA
-  ciu_nooverton = NA
+  sdrho_nooverton = 0
 }
+
+cr_lower_nooverton = rav_nooverton - 1.96*sdrho_nooverton   # equation 5 in Field & Gillett (2010)
+cr_upper_nooverton = rav_nooverton + 1.96*sdrho_nooverton
 
 ```
 
@@ -168,83 +117,5 @@ Estimated Variance in Population Correlations (i.e., sr2 - se2) = `r vrho_noover
 
 - Note that because this value is negative, confidence intervals cannot be calculated.
 
-meta r = `r round_half_up(rav_nooverton, 2)`, 95% CI [`r round_half_up(cil_nooverton, 2)`, `r round_half_up(ciu_nooverton, 2)`]
-
-# Additions
-
-## Confidence interval
-
-Confidence intervals are more commonly calculated (i.e., in non psychometric meta analyses) as simply estimate ± 1.96 * se. I try that here on the basis that perhaps Vahey et al defaulted to it when Field's script (above) could not calculate CIs by the H&S method. NB these use the non-overton transformed values.
-
-### Using Overton correction
-
-```{r}
-
-cil_se = rav - 1.96*sqrt(se2)
-ciu_se = rav + 1.96*sqrt(se2)
-
-```
-
-95% CR [`r round_half_up(cil_se, 2)`, `r round_half_up(ciu_se, 2)`]
-
-### Without Overton correction
-
-```{r}
-
-cil_nooverton_se = rav_nooverton - 1.96*sqrt(se2_nooverton)
-ciu_nooverton_se = rav_nooverton + 1.96*sqrt(se2_nooverton)
-
-```
-
-95% CR [`r round_half_up(cil_nooverton_se, 2)`, `r round_half_up(ciu_nooverton_se, 2)`]
-
-## Credibility interval
-
-Vahey et al. (2015) reported 95% CR [.23, .67].
-
-Whereas the "h_s syntax.sps" file calculates a credibility interval, the "Meta_Basic_r.sps" file does not. 
-
-However, such an interval can be calculated using the same formula as in the "h_s syntax.sps" file.
-
-### Using Field's "h_s syntax.sps" formula
-
-#### With Overton correction 
-
-```{r}
-
-# CR using s_r^2 calculated above 
-crl = rav - 1.96*sqrt(sr2)
-cru = rav + 1.96*sqrt(sr2)
-
-```
-
-95% CR [`r round_half_up(crl, 2)`, `r round_half_up(cru, 2)`]
-
-#### Without Overton correction 
-
-```{r}
-
-# CR using s_r^2 calculated above
-crl_nooverton = rav_nooverton - 1.96*sqrt(sr2_nooverton)
-cru_nooverton = rav_nooverton + 1.96*sqrt(sr2_nooverton)
-
-```
-
-95% CR [`r round_half_up(crl_nooverton, 2)`, `r round_half_up(cru_nooverton, 2)`]
-
-### Attempt to reproduce Vahey et al.'s (2015) 95% CR from their reported $s_r^2$
-
-As a third attempt at verification, I too one step back and tried to reproduce their 95% CR from their reported $s_r^2$ (0.006) and $\overline{r}$ (.45).
-
-```{r}
-
-# s_r^2 (0.006) and r_bar (.45) as reported in Vahey et al. 2015
-crl_verified = .45 - 1.96*sqrt(0.006)
-cru_verified = .45 + 1.96*sqrt(0.006)
-
-```
-
-95% CR [`r round_half_up(crl_verified, 2)`, `r round_half_up(cru_verified, 2)`]
-
-Following Field & Gillet's (2010) definition of a CR (equation 5), which is consistent with Field's implementation of the CR (see "h_s syntax.sps"), which Vahey reported to me in an email that he employed, Vahey et al.'s (2015) reported CR cannot be reproduced from their $s_r^2$ and $\overline{r}$.
+meta r = `r round_half_up(rav_nooverton, 2)`, 95% CR [`r round_half_up(cr_lower_nooverton, 2)`, `r round_half_up(cr_upper_nooverton, 2)`]
 
