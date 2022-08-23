@@ -61,25 +61,6 @@ meta_effect_string <- function(fit, predictions){
          ", p = ", signif(2*pnorm(-abs(fit$zval)), digits = 1))  # exact p value from z score
 }
 
-# heterogeneity strings
-# heterogeneity_string <- function(fit){
-#   #"Q(df=", fit$k - 1, ") = ", janitor::round_half_up(fit$QE, 2),
-#   #        ", p ", ifelse(fit$QEp < 0.001, "< .001", paste0("= ", as.character(janitor::round_half_up(fit$QEp, 3)))),
-#   #        ", ", 
-#   if(!is.null(fit$I2)){
-#     heterogeneity_string <- 
-#       paste0("Heterogeneity: ", greekLetters::greeks("tau^2"), " = ", janitor::round_half_up(fit$tau2, 2),
-#              ", ", greekLetters::greeks("I^2"), " = ", janitor::round_half_up(fit$I2, 2),
-#              "%, ", greekLetters::greeks("H^2"), " = ",janitor::round_half_up(fit$H2, 2))
-#   } else {
-#     heterogeneity_string <- 
-#       paste0("Heterogeneity: ", greekLetters::greeks("tau^2"), " = ", janitor::round_half_up(fit$tau2, 2))
-#   }
-#   return(heterogeneity_string)
-# }
-# 
-# footnote   = heterogeneity_string(fit_new)
-
 # notation off
 options(scipen = 999)
 
@@ -98,7 +79,7 @@ data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
 
 ```
 
-# Computational replication of original analylses
+# Reproducibility of original analylses
 
 ## Power analyses 
 
@@ -242,6 +223,7 @@ Information about implementation of Hunter & Schmidt-style meta-analysis in meta
 
 total_n <- data_vahey %>%
   distinct(article, n_forest_plot) %>%
+  drop_na()
   summarize(total_n = sum(n_forest_plot, na.rm = TRUE)) %>%
   pull(total_n)
 
@@ -298,7 +280,8 @@ data_forest <- data_recalculated_variance %>%
   #                  r = predictions_reproduced$pred,
   #                  lower = predictions_reproduced$pi.lb,
   #                  upper = predictions_reproduced$pi.ub)) %>%
-  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", "Meta (credibility interval)"),
+  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", 
+                                           "Meta (credibility interval)"),
                    n = 35, # arbitrary number to make the diamond an appropriate size
                    r = c(predictions_reproduced$pred, 
                          predictions_reproduced$pred),
@@ -309,22 +292,8 @@ data_forest <- data_recalculated_variance %>%
   mutate(size = n/sum(n),
          n = ifelse(str_detect(article_abbreviated, "Meta"), total_n, n),
          article_abbreviated = fct_relevel(article_abbreviated,
-                                           "Carpenter et al. (2012)", 
-                                           "Dawson et al. (2009)", 
-                                           "Hooper et al, (2010)", 
-                                           "Hussey & Barnes-Holmes (2012)", 
-                                           "Kishita et al. (2014)", 
-                                           "Kosnes et al. (2013)", 
-                                           "Nicholson & Barnes-Holmes (2012a)", 
-                                           "Nicholson & Barnes-Holmes (2012b)", 
-                                           "Nicholson, Dempsey et al. (2013)", 
-                                           "Nicholson, McCourt et al. (2013)", 
-                                           "Parling et al. (2011)", 
-                                           "Remue et al. (2013)", 
-                                           "Timko et al. (2010, Study 1)", 
-                                           "Vahey et al. (2009)", 
-                                           "Vahey et al. (2010)",
-                                           "Meta")) %>%
+                                           "Meta (confidence interval)", 
+                                           "Meta (credibility interval)")) %>%
   mutate(` ` = paste(rep(" ", 30), collapse = " ")) %>%
   select(Article = article_abbreviated, ` `, r, lower, upper, n, size) %>%
   round_df(2)
@@ -413,7 +382,8 @@ data_forest_transformed <- data_recalculated_variance_transformed %>%
   #                  r = predictions_reproduced_transformed$pred,
   #                  lower = predictions_reproduced_transformed$pi.lb,
   #                  upper = predictions_reproduced_transformed$pi.ub)) %>%
-  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", "Meta (credibility interval)"),
+  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", 
+                                           "Meta (credibility interval)"),
                    n = 35, # arbitrary number to make the diamond an appropriate size
                    r = c(predictions_reproduced_transformed$pred,
                          predictions_reproduced_transformed$pred),
@@ -427,22 +397,8 @@ data_forest_transformed <- data_recalculated_variance_transformed %>%
   mutate(size = n/sum(n),
          n = ifelse(str_detect(article_abbreviated, "Meta"), total_n, n),
          article_abbreviated = fct_relevel(article_abbreviated,
-                                           "Carpenter et al. (2012)", 
-                                           "Dawson et al. (2009)", 
-                                           "Hooper et al, (2010)", 
-                                           "Hussey & Barnes-Holmes (2012)", 
-                                           "Kishita et al. (2014)", 
-                                           "Kosnes et al. (2013)", 
-                                           "Nicholson & Barnes-Holmes (2012a)", 
-                                           "Nicholson & Barnes-Holmes (2012b)", 
-                                           "Nicholson, Dempsey et al. (2013)", 
-                                           "Nicholson, McCourt et al. (2013)", 
-                                           "Parling et al. (2011)", 
-                                           "Remue et al. (2013)", 
-                                           "Timko et al. (2010, Study 1)", 
-                                           "Vahey et al. (2009)", 
-                                           "Vahey et al. (2010)",
-                                           "Meta")) %>%
+                                           "Meta (confidence interval)", 
+                                           "Meta (credibility interval)")) %>%
   mutate(` ` = paste(rep(" ", 30), collapse = " ")) %>%
   select(Article = article_abbreviated, ` `, r, lower, upper, n, size) %>%
   round_df(2)
@@ -474,38 +430,6 @@ ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method with Fishe
 
 Meta effect: `r meta_effect_string(fit_reproduced_transformed, predictions_reproduced_transformed_backtransformed)`.
 
-### Summary
-
-```{r}
-
-bind_rows(
-  results_spss %>% select(-k_studies, -total_n),
-  predictions_reproduced_printing,
-  predictions_reproduced_transformed_backtransformed
-) %>%
-  rownames_to_column(var = "analysis") %>%
-  mutate(analysis = case_when(analysis == "...1" ~ "Vahey et al.",
-                              analysis == "...2" ~ "Attempted computational reproduction: Field & Gillett's implementation of Hunter & Schmidt",
-                              analysis == "...3" ~ "Attempted computational reproduction: Vichtbauer's implementation of Hunter & Schmidt",
-                              analysis == "...4" ~ "Attempted computational reproduction: Vichtbauer's implementation of Hunter & Schmidt + Fisher's r-to-z transformations")) %>%
-  rename(estimate = pred, ci_lower = ci.lb, ci_upper = ci.ub, cr_lower = pi.lb, cr_upper = pi.ub) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-```
-
-I report three attempts to reproduce Vahey et al.'s results using (a) Field & Gillett's (2010) SPSS script for a Hunter & Schmidt style meta-analysis, which Vahey referred me to use to reproduce their results, (b) a close implementation of the same Hunter & Schmidt style meta-analysis in R using the well-established metafor package, and (c) the same Hunter& Schmidt meta-analysis in r/metafor adding the transformations Field & Gillett recommended for a different analytic strategy (i.e., Hedges' and colleagues use of Fisher's r-to-z transformations).
-
-None of the three analytic strategies/implementations fully reproduced Vahey et al.'s results. 
-
-All three return the same meta-estimate of effect size: r = .47, where Vahey et al reported r = .45.
-
-Both of the metafor implementations produce the same confidence intervals as reported in Vahey et al, but Field & Gillett's SPSS script produces very different ones.
-
-Only the analysis that included Fishers' r-to-z transformations can account for and replicate the asymmetric confidence intervals on individual effect sizes that Vahey et al. reported in their forest plot. At minimum, it appears that Vahey et al. employed (and did not report using) a mixture of the Hunter & Schmidt method and the Hedges' method of transformation. 
-
-No implementation produced similar credibility intervals to Vahey et al.
-
 ## Average effect sizes 
 
 Reported in forest plot, calculated from individual effect sizes in supplementary materials.
@@ -524,18 +448,14 @@ data_weighted_effect_sizes <- data_vahey %>%
          r_supplementary, 
          df_supplementary) %>%
   group_by(article) %>%
-  mutate(mean_df = mean(df_supplementary)) %>%
+  summarize(r_recalculated_weighted_mean = round_half_up(weighted.mean(x = r_supplementary, w = df_supplementary), 2)) %>%
   ungroup() %>%
-  mutate(r_weighted_by_df = r_supplementary*(df_supplementary/mean_df)) %>%
-  group_by(article) %>%
-  summarize(r_recalculated_weighted_mean = round_half_up(mean(r_weighted_by_df), 2)) %>%
   left_join(data_vahey %>% 
               select(article = article_abbreviated, 
                      mean_r_forest_plot_numeric) %>%
               drop_na(),
             by = "article") %>%
-  mutate(congruence = ifelse(janitor::round_half_up(r_recalculated_weighted_mean, 2) == 
-                               janitor::round_half_up(mean_r_forest_plot_numeric, 2), "Congruent", "Incongruent"),
+  mutate(congruence = ifelse(janitor::round_half_up(r_recalculated_weighted_mean, 2) == janitor::round_half_up(mean_r_forest_plot_numeric, 2), "Congruent", "Incongruent"),
          congruence = fct_relevel(congruence, "Congruent", "Incongruent"),
          difference = r_recalculated_weighted_mean - mean_r_forest_plot_numeric)
 
@@ -585,140 +505,32 @@ The weighted effect sizes reported in Vahey et al.'s forest plot could not be co
 
 Many values were congruent, but a minority differed (k = 2 [13%]). Table includes those that differed.
 
-## Extraction and conversion of included individual effect sizes
+## Individual effect sizes
 
-Attempted to reextract the individual effect sizes listed in the supplementary materials and convert them to Pearson's *r*. 
+### Assessment of incorrect inclusion
 
-Note that only a subset were possible to reextract/convert, for the following reasons:
-
-- Vahey et al. appear to have treated the $\eta^2_p$ effect size reported in original papers as if it was equivalent to $\eta^2$ for the purposes of conversion to r, which it is not: (a) $\eta^2$ has a relatively simpler mathematical transformation to Pearson's r, which Vahey et al. appear to have applied to $\eta^2_p$, which is not possible to convert to Pearson's r due to the fact that it is a partial correlation (e.g., Hooper et al., 2010; Hussey & Barnes-Holmes, 2012).
-- Similarly, Vahey et al. appear to have treated (partial) eta squared as if it is generalized eta squared for the purposes of meta analysis. (Partial) eta square values for different types of factorial designs cannot be meta analyzed together (lakens 2013).
-- confidence intervals around r values converted from eta squared appear be calculated using r and N, which is in appropriate for eta2. this might not be the case, it is a best guess. but the manuscript fails to specify how they were calculated. 
-- In some cases, effect sizes reported in Vahey et al.'s supplementary materials did not refer to effect sizes that were reported in the original article (e.g., Timko et al., 2010; Study 1, correlation between overall D score	and DASS-total). It is possible that these effects were obtained by contacting the original authors, but this is not reported in Vahey et al.
-- Some were not reported in sufficient detail in the original paper to allow for the calculation of an effect size, and contact with the original authors did not result in data/result being provided (e.g., Parling et al., 2012).
-- Non-criterion effects that referred only to the presence of an IRAP effect, but not the covariation between IRAP scores and an external variable, were not reextracted or converted. This was on the basis that this work is labor intensive, these effects do not meet the inclusion criteria, and therefore these effects would not be used in the subsequent new meta analysis. This point is discussed further below.  
-
-```{r fig.height=4.5, fig.width=4.5}
-
-data_reextracted_and_annotated <- read.csv("../data/data_reextracted_and_annotated.csv")
-
-# get effect sizes
-data_individual_effect_sizes <- data_reextracted_and_annotated %>%
-  # consider only those effect sizes employed in vahey et al.'s meta-analysis
-  filter(es_included_in_vahey_meta == TRUE) %>%
-  # create an simplified effect size identifier
-  group_by(article) %>%
-  mutate(es_number = row_number()) %>%
-  ungroup() %>%
-  select(article, es_number, r_vahey, r_from_paper, n_from_paper) 
-
-# table
-data_individual_effect_sizes %>%
-  summarize(n_reextracted = sum(!is.na(r_from_paper)),
-            percent_reextracted = round_half_up(sum(!is.na(r_from_paper))/n(), 3)*100) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-# assess congruence
-data_individual_effect_sizes_congruence <- data_individual_effect_sizes %>%
-  na.omit() %>%
-  mutate(congruence = ifelse(round_half_up(r_from_paper, 2) == round_half_up(r_vahey, 2), "Congruent", "Incongruent"),
-         congruence = fct_relevel(congruence, "Congruent", "Incongruent"),
-         difference = round_half_up(r_from_paper - r_vahey, 2))
-
-# plot
-p_comparison_reextracted <- 
-  ggplot(data_individual_effect_sizes_congruence, aes(r_vahey, r_from_paper)) +
-  geom_abline(slope = 1, linetype = "dotted") +
-  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
-  theme_classic() +
-  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
-  theme(legend.position = "top", # c(0.25, 0.85),
-        legend.title = element_blank()) + 
-  #legend.box.background = element_rect(colour = "black")) +
-  xlim(0, 0.7) +
-  ylim(0, 0.7) +
-  xlab("Reported in Vahey et al.'s (2015)\nsupplementary materials") +
-  ylab("Reextracted from original articles\n") +
-  annotate("text", x = .54, y = .175, size = 3, label = "Overestimates validity") +
-  annotate("text", x = .175, y = .54, size = 3, label = "Underestimates validity")
-
-p_comparison_reextracted
-
-ggplot2::ggsave(filename = "plots/scatter plot comparing effect sizes in supplementary materials to reextracted effect sizes.pdf", 
-                plot = p_comparison_reextracted,
-                device = "pdf",
-                width = 4.5, 
-                height = 4.5, 
-                units = "in")
-
-# table
-data_individual_effect_sizes_congruence %>%
-  summarize(n_incongruent = sum(ifelse(congruence == "Incongruent", TRUE, FALSE)),
-            percent_incongruent = round_half_up(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-data_individual_effect_sizes_congruence %>%
-  filter(difference != 0) %>%
-  select(article, r_vahey, r_from_paper, difference) %>%
-  kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
-
-```
-
-Table includes those that differed.
-
-### Critique of Vahey et al.'s inclusions
-
-Vahey et al (2015) stated: "To be included within the current meta-analysis a given statistical effect must have described the co-variation of an IRAP effect with a corresponding clinically-focused criterion variable. To qualify as clinically-focused, the IRAP and criterion variables must have been deemed to target some aspect of a condition included in a major psychiatric diagnostic scheme such as the Diagnostic and Statistical Manual of Mental Disorders (DSM-5, 2013)."
-
-Vahey et al.'s own inclusion criteria state that they would include, as evidence of criterion validity, effects that describe co-variation between IRAP scores and an external variable. However, many of their included effect sizes involve no external variable, only the presence of a non-zero IRAP effect at the group level. IRAP effects without reference to an external variable that cannot provide criterion validity, just as a group's mean score on a self-report cannot in isolation provide evidence for that measure's criterion validity.
-
-Number and proportion of Vahey et al.'s 56 effect sizes from their supplementary materials that cannot provide evidence of criterion validity:
+Laken’s (2016) describes incorrect inclusions as inclusion of effect sizes that do not meet the inclusion criteria. Vahey et al. (2015) stated that the purpose of their meta-analysis was to “quantify how much IRAP effects from clinically-relevant responding co-vary with corresponding clinically-relevant criterion variables” (p.60). Their inclusion criterion was that “the IRAP and criterion variables must have been deemed to target some aspect of a condition included in a major psychiatric diagnostic scheme such as the Diagnostic and Statistical Manual of Mental Disorders (DSM-5, 2013) … The authors decided whether the responses measured by a given IRAP trial-type should co-vary with a specific criterion variable by consulting the relevant empirical literature.” (p.60). References to neither the specific clinical condition that was targeted by the IRAP and the criterion variable nor the specific empirical literature that Vahey et al. (2015) used to justify the inclusion of each criterion were provided in the original article or supplementary materials. Nonetheless, Vahey’s own inclusion criterion required that effects referred to covariation between an IRAP and an external clinically-relevant criterion variable, consistent with the APA dictionary of psychology definition of criterion validity (REF).
 
 ```{r}
 
-data_reextracted_and_annotated %>%
-  filter(es_included_in_vahey_meta == TRUE) %>%
-  mutate(non_criterion_validity_effect = specific_criterion_variable_type == "IRAP effect significance from zero test") %>%
-  summarize(non_criterion_validity_effect_count = sum(non_criterion_validity_effect),
-            non_criterion_validity_effect_proportion = mean(non_criterion_validity_effect)) %>%
+data_vahey %>%
+  count(involves_external_criterion) %>%
   kable() %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
 ```
 
-### Critique of Vahey et al.'s exclusions/omissions
+### Assessment of incorrect exclusion
 
-Evidence from Vahey et al.'s choices of what to include vs not is at times hard to defend. Eg vahey et al 2009; comparisons between Nicholson et al. studies.
+“Collectively, these 15 articles yielded 56 statistical effects between various clinically focused IRAP effects and their respective criterion variables. ... of the 56 statistical effects only 8 (i.e. 14%) were not initially cited by both authors for inclusion.” (Vahey et al., 2015, p. 60)
 
-Many effects that would seem to meet the criterion of being clinically relevant which were not included. Similar effects that were larger in magnitude were included.
-
-- Vahey et al (2009) reported comparisons between three groups: 
-- undergraduate vs main block prisoners (r = .46, in line with predictions)
-- main block vs open air prisoners (r = -.62, against predictions)
-- undergraduate vs open air prisoners (r = -0.04, against predictions)
-- Only the first ES was included in Vahey's meta analysis, while also being the only ES that was large and in the predicted direction. As the first author of the original article, Vahey can't really claim to be unfamiliar with the specifics of the work.
-- nicholson papers  sometimes chose subscale correlations but not others, and this choice seems to be related to the strength of the result (ie preferable result was chosen). As a coauthor of the original article, Nicholson can't really claim to be unfamiliar with the specifics of the work.
-- Dawson et al (2012): child sex offenders group child-sexual trial type, non significant: not included
-- timko et al., 2010 study 1, Between  groups comparison - not dieting versus those dieting. NB there are two  dieting groups, one to lose weight and one to maintain. Vahey does not note  which they are comparing, or why one comparison was excluded. [only the larger significant effect was included]
-
-Some interaction effects were included but their main effects were not, when the main effects seem as plausibly clinically relevant as the interactions. 
-
-- Hussey et al 2012
-
-Some included effects were not reported in the original manuscript. However, Vahey et al do not report in their manuscript that they did not merely extract reported effect sizes but generated new results. This can't be defended as an effort to standardize the effects being analyzed, as some effects come from individual trial types, some from overall effects, and some from the interaction between group and trial type.
-
-- Timko et al. (2010; Study 1) overall D-IRAP score ~ DASS-total (r = 0.48).
-
-## Comprehensive extraction of effect sizes
-
-Vahey et al. reported extracting 56 effect sizes prior to exclusions: "Collectively, these 15 articles yielded 56 statistical effects between various clinically focused IRAP effects and their respective criterion variables." (p.60)
+Vahey et al. did not report how many effect sizes they excluded. 
 
 ```{r}
 
 data_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
+  # remove effects that merely repeat what vahey found, which are replaced by other rows that do new extractions for a corrispondonding effect. 
+  filter(replaced_effect == FALSE) %>%
   # mark each effect as clinically relevant only if both raters scored it as such
   rowwise() %>%
   mutate(clinically_relevant = 
@@ -726,28 +538,25 @@ data_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
                             clinically_relevant_criterion_rater_2)))) %>%
   ungroup()
 
-total_n <- data_reextracted %>%
-  distinct(article, n_from_paper) %>%
-  summarize(total_n = sum(n_from_paper)) %>%
-  pull(total_n)
+# remove non-criterion effects
+data_reextracted_criterion <- data_reextracted %>%
+  filter(criterion_effect == TRUE) 
+
+# remove non-clinical criterion variables
+data_reextracted_criterion_clinically_relevant <- data_reextracted_criterion %>%
+  filter(clinically_relevant == TRUE) 
 
 ```
 
-I reextracted effect sizes from these same 15 articles and found `r nrow(data_reextracted)` effect sizes. 
+I reviewed these same 15 articles and followed Vahey et al.'s (2015) same inclusion criteria (i.e., like Vahey, I did not limit myself to effect sizes reported in the articles but also considered ones implied within the articles. Like Vahey et al., where necessary I contacted the original authors to obtain additional information about effect sizes). 
 
-## Application of exclusion criteria
+I extracted `r nrow(data_reextracted)` effect sizes. Of these, `r nrow(data_reextracted_criterion)` met the inclusion criterion of being a criterion effect. Of these, `r nrow(data_reextracted_criterion_clinically_relevant)` met the inclusion criterion of being clincially relevant by Vahey et al.'s definition. This was `r round_half_up(nrow(data_reextracted_criterion_clinically_relevant)/56, 1)` times the number extracted by Vahey et al. 
 
-Vahey et al. reported 100% inter rater reliability for the scoring of the suitability of effect sizes for inclusion: "From the outset, there was no disagreement between the authors about what statistical effects should be excluded from the meta-analysis; and of the 56 statistical effects only 8 (i.e. 14%) were not initially cited by both authors for inclusion.” (p.60) 
-
-They do not provide information about the excluded 8 effect sizes. 
-
-Vahey et al stated that "The authors decided whether the responses measured by a given IRAP trial-type should co-vary with a specific criterion variable by consulting the relevant empirical literature. In the absence of such evidence, the authors strictly excluded even substantial statistical effects between IRAP effects and accompanying variables from the current meta-analysis." Note however that Vahey et al. did not provide citations of relevant literature that support the inclusion of any given effect. As such, this high rate of agreement between Vahey & Nicholson does not necessarily imply that the inclusion and exclusion criteria would achieve the same level of agreement by others. 
-
-The comprehensively extracted effect sizes were rated by two independent reviewers.
+#### Inter rater reliability
 
 ```{r}
 
-data_raters <- data_reextracted %>%
+data_raters <- data_reextracted_criterion %>%
   select(clinically_relevant_criterion_rater_1, clinically_relevant_criterion_rater_2)
 
 data_raters %>%
@@ -760,9 +569,7 @@ kappa2(data_raters, "unweighted")
 
 ```
 
-After exclusions, `r nrow(filter(data_reextracted, clinically_relevant == TRUE & problematic_analysis == FALSE))` effect sizes remained for inclusion in the new meta-analysis, compared to Vahey et al.'s 56.
-
-# Extended analyses
+# Reanalyses
 
 ## Meta-analysis including all effects meeting Vahey et al.'s own inclusion and exclusion criteria
 
@@ -777,9 +584,16 @@ Details of the meta-analytic strategy, which used contemporary methods:
 
 ```{r fig.height=32, fig.width=7.5}
 
+total_n_new <- data_reextracted_criterion_clinically_relevant %>%
+  distinct(article, n_from_paper) %>%
+  group_by(article) %>%
+  filter(n_from_paper == max(n_from_paper)) %>%
+  ungroup() %>%
+  summarize(total_n = sum(n_from_paper, na.rm = TRUE)) %>%
+  pull(total_n)
+
 # exclusions and transformations
-data_for_meta_new <- data_reextracted %>%
-  filter(problematic_analysis == FALSE & clinically_relevant == TRUE) %>%
+data_for_meta_new <- data_reextracted_criterion_clinically_relevant %>%
   mutate(variables = paste(irap_variable, criterion_variable, sep = "-")) %>%
   dplyr::select(article, variables, r_from_paper, n_from_paper, authors_include_bh) %>%
   na.omit() %>%
@@ -817,8 +631,8 @@ predictions_new <-
   as.data.frame() %>%
   select(-se) %>%
   # cr following Field & Gillett (2010) equation 5
-  mutate(cr.lb = pred - 1.96*sqrt(fit_reproduced$tau2),
-         cr.ub = pred + 1.96*sqrt(fit_reproduced$tau2))
+  mutate(cr.lb = pred - 1.96*sqrt(fit_new$tau2),
+         cr.ub = pred + 1.96*sqrt(fit_new$tau2))
 
 predictions_new_backtransformed <- predictions_new %>%
   mutate_all(transf.ztor) %>%
@@ -854,80 +668,12 @@ data_forest_new <- data_for_meta_new %>%
          lower = transf.ztor(lower),
          upper = transf.ztor(upper)) %>%
   mutate(size = n/sum(n),
-         n = ifelse(str_detect(article_abbreviated, "Meta"), total_n, n),
+         n = ifelse(str_detect(article_abbreviated, "Meta"), total_n_new, n),
          article_abbreviated = fct_relevel(article_abbreviated,
-                                           "Carpenter et al. (2012) 1", "Carpenter et al. (2012) 10", 
-                                           "Carpenter et al. (2012) 11", "Carpenter et al. (2012) 12", "Carpenter et al. (2012) 13", 
-                                           "Carpenter et al. (2012) 14", "Carpenter et al. (2012) 15", "Carpenter et al. (2012) 16", 
-                                           "Carpenter et al. (2012) 17", "Carpenter et al. (2012) 18", "Carpenter et al. (2012) 19", 
-                                           "Carpenter et al. (2012) 2", "Carpenter et al. (2012) 20", "Carpenter et al. (2012) 3", 
-                                           "Carpenter et al. (2012) 4", "Carpenter et al. (2012) 5", "Carpenter et al. (2012) 6", 
-                                           "Carpenter et al. (2012) 7", "Carpenter et al. (2012) 8", "Carpenter et al. (2012) 9", 
-                                           "Dawson et al. (2009) 1", "Dawson et al. (2009) 2", "Dawson et al. (2009) 3", 
-                                           "Dawson et al. (2009) 4", "Dawson et al. (2009) 5", "Dawson et al. (2009) 6", 
-                                           "Hussey & Barnes-Holmes (2012) 1", "Hussey & Barnes-Holmes (2012) 10", 
-                                           "Hussey & Barnes-Holmes (2012) 11", "Hussey & Barnes-Holmes (2012) 12", 
-                                           "Hussey & Barnes-Holmes (2012) 13", "Hussey & Barnes-Holmes (2012) 14", 
-                                           "Hussey & Barnes-Holmes (2012) 15", "Hussey & Barnes-Holmes (2012) 16", 
-                                           "Hussey & Barnes-Holmes (2012) 17", "Hussey & Barnes-Holmes (2012) 18", 
-                                           "Hussey & Barnes-Holmes (2012) 19", "Hussey & Barnes-Holmes (2012) 2", 
-                                           "Hussey & Barnes-Holmes (2012) 20", "Hussey & Barnes-Holmes (2012) 21", 
-                                           "Hussey & Barnes-Holmes (2012) 22", "Hussey & Barnes-Holmes (2012) 23", 
-                                           "Hussey & Barnes-Holmes (2012) 24", "Hussey & Barnes-Holmes (2012) 25", 
-                                           "Hussey & Barnes-Holmes (2012) 26", "Hussey & Barnes-Holmes (2012) 27", 
-                                           "Hussey & Barnes-Holmes (2012) 28", "Hussey & Barnes-Holmes (2012) 29", 
-                                           "Hussey & Barnes-Holmes (2012) 3", "Hussey & Barnes-Holmes (2012) 30", 
-                                           "Hussey & Barnes-Holmes (2012) 4", "Hussey & Barnes-Holmes (2012) 5", 
-                                           "Hussey & Barnes-Holmes (2012) 6", "Hussey & Barnes-Holmes (2012) 7", 
-                                           "Hussey & Barnes-Holmes (2012) 8", "Hussey & Barnes-Holmes (2012) 9", 
-                                           "Nicholson & Barnes-Holmes (2012b) 1", "Nicholson & Barnes-Holmes (2012b) 10", 
-                                           "Nicholson & Barnes-Holmes (2012b) 2", "Nicholson & Barnes-Holmes (2012b) 3", 
-                                           "Nicholson & Barnes-Holmes (2012b) 4", "Nicholson & Barnes-Holmes (2012b) 5", 
-                                           "Nicholson & Barnes-Holmes (2012b) 6", "Nicholson & Barnes-Holmes (2012b) 7", 
-                                           "Nicholson & Barnes-Holmes (2012b) 8", "Nicholson & Barnes-Holmes (2012b) 9", 
-                                           "Nicholson, Dempsey et al. (2014) 1", "Nicholson, Dempsey et al. (2014) 10", 
-                                           "Nicholson, Dempsey et al. (2014) 11", "Nicholson, Dempsey et al. (2014) 12", 
-                                           "Nicholson, Dempsey et al. (2014) 13", "Nicholson, Dempsey et al. (2014) 14", 
-                                           "Nicholson, Dempsey et al. (2014) 15", "Nicholson, Dempsey et al. (2014) 16", 
-                                           "Nicholson, Dempsey et al. (2014) 17", "Nicholson, Dempsey et al. (2014) 18", 
-                                           "Nicholson, Dempsey et al. (2014) 19", "Nicholson, Dempsey et al. (2014) 2", 
-                                           "Nicholson, Dempsey et al. (2014) 20", "Nicholson, Dempsey et al. (2014) 21", 
-                                           "Nicholson, Dempsey et al. (2014) 22", "Nicholson, Dempsey et al. (2014) 3", 
-                                           "Nicholson, Dempsey et al. (2014) 4", "Nicholson, Dempsey et al. (2014) 5", 
-                                           "Nicholson, Dempsey et al. (2014) 6", "Nicholson, Dempsey et al. (2014) 7", 
-                                           "Nicholson, Dempsey et al. (2014) 8", "Nicholson, Dempsey et al. (2014) 9", 
-                                           "Nicholson, McCourt et al. (2013) 1", "Nicholson, McCourt et al. (2013) 10", 
-                                           "Nicholson, McCourt et al. (2013) 2", "Nicholson, McCourt et al. (2013) 3", 
-                                           "Nicholson, McCourt et al. (2013) 4", "Nicholson, McCourt et al. (2013) 5", 
-                                           "Nicholson, McCourt et al. (2013) 6", "Nicholson, McCourt et al. (2013) 7", 
-                                           "Nicholson, McCourt et al. (2013) 8", "Nicholson, McCourt et al. (2013) 9", 
-                                           "Timko et al. (2010; Study 1) 1", "Timko et al. (2010; Study 1) 10", 
-                                           "Timko et al. (2010; Study 1) 11", "Timko et al. (2010; Study 1) 12", 
-                                           "Timko et al. (2010; Study 1) 13", "Timko et al. (2010; Study 1) 14", 
-                                           "Timko et al. (2010; Study 1) 15", "Timko et al. (2010; Study 1) 16", 
-                                           "Timko et al. (2010; Study 1) 17", "Timko et al. (2010; Study 1) 18", 
-                                           "Timko et al. (2010; Study 1) 19", "Timko et al. (2010; Study 1) 2", 
-                                           "Timko et al. (2010; Study 1) 20", "Timko et al. (2010; Study 1) 21", 
-                                           "Timko et al. (2010; Study 1) 22", "Timko et al. (2010; Study 1) 23", 
-                                           "Timko et al. (2010; Study 1) 24", "Timko et al. (2010; Study 1) 25", 
-                                           "Timko et al. (2010; Study 1) 26", "Timko et al. (2010; Study 1) 27", 
-                                           "Timko et al. (2010; Study 1) 28", "Timko et al. (2010; Study 1) 29", 
-                                           "Timko et al. (2010; Study 1) 3", "Timko et al. (2010; Study 1) 30", 
-                                           "Timko et al. (2010; Study 1) 31", "Timko et al. (2010; Study 1) 32", 
-                                           "Timko et al. (2010; Study 1) 4", "Timko et al. (2010; Study 1) 5", 
-                                           "Timko et al. (2010; Study 1) 6", "Timko et al. (2010; Study 1) 7", 
-                                           "Timko et al. (2010; Study 1) 8", "Timko et al. (2010; Study 1) 9", 
-                                           "Timko et al. (2010; Study 2) 1", "Timko et al. (2010; Study 2) 10", 
-                                           "Timko et al. (2010; Study 2) 11", "Timko et al. (2010; Study 2) 12", 
-                                           "Timko et al. (2010; Study 2) 2", "Timko et al. (2010; Study 2) 3", 
-                                           "Timko et al. (2010; Study 2) 4", "Timko et al. (2010; Study 2) 5", 
-                                           "Timko et al. (2010; Study 2) 6", "Timko et al. (2010; Study 2) 7", 
-                                           "Timko et al. (2010; Study 2) 8", "Timko et al. (2010; Study 2) 9",
-                                           #"Meta"
                                            "Meta (confidence interval)", 
                                            "Meta (credibility interval)",
                                            "Meta (prediction interval)")) %>%
-  mutate(` ` = paste(rep(" ", 30), collapse = " ")) %>%
+  mutate(` ` = paste(rep(" ", 35), collapse = " ")) %>%
   select(Article = article_abbreviated, ` `, r, lower, upper, n, size) %>%
   mutate(r     = round_half_up(r, 2),
          lower = round_half_up(lower, 2),
@@ -945,16 +691,16 @@ p_new <-
                        ci_column  = 2,
                        ref_line   = 0,
                        theme      = custom_theme,
-                       xlim       = c(-0.7, 0.9),
-                       ticks_at   = c(-.6, -.4, -.2, 0, .2, .4, .6, .8))
+                       xlim       = c(-0.7, 1.1),
+                       ticks_at   = c(-.6, -.4, -.2, 0, .2, .4, .6, .8, 1.0))
 
 p_new
 
 ggplot2::ggsave(filename = "plots/forest plot new multilevel model.pdf", 
                 plot = p_new,
                 device = "pdf",
-                width = 7.5, 
-                height = 32.3, 
+                width = 8, 
+                height = 38.8, 
                 units = "in")
 
 ```
@@ -1052,16 +798,5 @@ data_power_new %>%
   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
 
 ```
-
-# Conceptual critique: Analyses of the IRAP as the DV rather than the DV
-
-Incompatible with the idea that the IRAP can be used for clinical assessment. This would require that IRAP tells us something about individuals' clinical status/group/location on a continuum/etc (i.e., IRAP effects -> individuals). Most of the effect sizes come from analyses that assume the opposite, i.e., that individuals' clinical status/group/location on a continuum/etc. can tell us about their IRAP effects (i.e., individuals -> IRAP effects). 
-
-Even this new meta-analysis is mostly informative only for researchers wishing to study IRAP effects, rather than study individuals using the IRAP.
-
-Similar conceptual criticisms have been made elsewhere. Schmall et al (2016) reported results from a very large study which concluded that hippocampal volume ‘robustly discriminate[d] MDD patients from healthy controls’ (p. 1). However, Fried & Kievit (2016) pointed out that this was not the case: depression status predicted a detectable difference in mean hippocampal volume, but hippocampal volume was very weakly associated with individuals' depression status. They point out that Schmall et al had reversed their analysis' DV and IV when making conclusions. This error is equally applicable to Vahey et al: even if their meta analysis was computationally replicable, its conclusions would still not support their claim that the meta analysis “demonstrates the potential of the IRAP as a tool for clinical assessment” (p. 64). Rather, it would demonstrate that known clinical status (etc) has potential as a tool for the assessment of IRAP scores.
-
-
-
 
 
