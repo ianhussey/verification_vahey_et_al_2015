@@ -36,7 +36,6 @@ library(greekLetters)
 library(knitr)
 library(kableExtra)
 
-dir.create("models")
 dir.create("plots")
 
 # function to round all numeric vars in a data frame
@@ -478,11 +477,11 @@ p_comparison_reaveraged <-
 
 p_comparison_reaveraged
 
-ggplot2::ggsave(filename = "plots/scatter plot comparing effect sizes in forest plot to reaveraged from supplementary materials.pdf", 
+ggplot2::ggsave(filename = "plots/scatter plot comparing effect sizes in forest plot to reaveraged from supplementary materials.pdf",
                 plot = p_comparison_reaveraged,
                 device = "pdf",
-                width = 4.5, 
-                height = 4.5, 
+                width = 4.5,
+                height = 4.5,
                 units = "in")
 
 # table
@@ -622,9 +621,6 @@ fit_new <-
          data   = data_for_meta_new,
          slab   = article_abbreviated,
          digits = 10)
-
-# save to disk for pdf plots
-#write_rds(fit_new, "models/fit_new.rds")
 
 predictions_new <- 
   predict(fit_new) %>%
