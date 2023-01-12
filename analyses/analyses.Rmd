@@ -581,7 +581,7 @@ Details of the meta-analytic strategy, which used contemporary methods:
 - REML estimator rather than Hunter & Schmidt.
 - Multilevel meta-analysis model rather than weighted-averaging of effect sizes (random intercept for source study).
 
-```{r fig.height=32, fig.width=7.5}
+```{r fig.height=33, fig.width=7.5}
 
 total_n_new <- data_reextracted_criterion_clinically_relevant %>%
   distinct(article, n_from_paper) %>%
@@ -696,7 +696,7 @@ ggplot2::ggsave(filename = "plots/forest plot new multilevel model.pdf",
                 plot = p_new,
                 device = "pdf",
                 width = 8, 
-                height = 38.8, 
+                height = 39, 
                 units = "in")
 
 ```
