@@ -13,7 +13,7 @@ output:
 
 # TODO
 
-- *REINCLUDE SELF ESTEEM VAHEY STUDY*? check clinical exclusions
+- NA
 
 ```{r, include=FALSE}
 
@@ -88,7 +88,7 @@ Vahey et al.'s reported meta effect size estimate was r = .45, 95% CI [.40, .54]
 
 Using this effect size, they conducted power analyses. 
 
-- They reported that: "based on the current meta-effect [r = .40], a sample size of 29 participants would provide a study with a statistical power of .80 when examining the statistical significance of first-order Pearson's r correlations between clinically-focused IRAP effects and corresponding criterion variables" (p.63); and 
+- They reported that: "based on the current meta-effect [r = .45], a sample size of 29 participants would provide a study with a statistical power of .80 when examining the statistical significance of first-order Pearson's r correlations between clinically-focused IRAP effects and corresponding criterion variables" (p.63); and 
 - "Adopting a conservative approach in favour of controlling for overly optimistic publication biases, the most recent recommendation is to calculate sample size requirements not in terms of a given meta-effect, but rather in terms of the lower bound of its associated confidence interval (Perugini, Gallucci, & Costantini, 2014). Given that we obtained a confidence interval of (.40, .54) around the present meta-effect, Perugini et al.'s approach implies that a sample size of at least N = 37 would be required in order to achieve a statistical power of .80 when testing a continuous first-order correlation between a clinically-focused IRAP effect and a given criterion variable" (p.63).
 
 I used the R packages pwr and effectsize to attempt to reproduce these values. 
@@ -222,7 +222,7 @@ Information about implementation of Hunter & Schmidt-style meta-analysis in meta
 
 total_n <- data_vahey %>%
   distinct(article, n_forest_plot) %>%
-  drop_na()
+  drop_na() %>%
   summarize(total_n = sum(n_forest_plot, na.rm = TRUE)) %>%
   pull(total_n)
 
