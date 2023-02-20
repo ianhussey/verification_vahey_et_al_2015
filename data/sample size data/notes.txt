@@ -1,0 +1,1 @@
+"data_irap.csv" from systematic review of published IRAP research 2006-2022: https://github.com/ianhussey/review-of-sample-sizes-and-power-in-irap-literature/blob/main/data/processed/data_irap.csv See preprint: https://psyarxiv.com/g2x9p

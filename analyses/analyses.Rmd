@@ -13,7 +13,8 @@ output:
 
 # TODO
 
-- NA
+- examine use of na.omit, authors_include_bh, and contents of clinically_relevant
+- NOTE SOMEWHERE THAT N IN EACH CELL IN THE TABLE IS TOTAL N FOR THE STUDY, EVEN FOR THE INDEPENDENT T TESTS
 
 ```{r, include=FALSE}
 
@@ -74,7 +75,36 @@ custom_theme <-
                footnote_cex = 0.8)
 
 # get data
+## Vahey et al.'s effect sizes
 data_vahey <- read.csv("../data/data_vahey_et_al_2015.csv")
+
+
+## get effect sizes reextracted from the original articles
+data_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
+  # remove effects that merely repeat what vahey found, which are replaced by other rows that do new extractions for a corrispondonding effect. 
+  filter(replaced_effect == FALSE) %>%
+  # mark each effect as clinically relevant only if both raters scored it as such
+  rowwise() %>%
+  mutate(clinically_relevant = 
+           as.logical(max(c(clinically_relevant_criterion_rater_1,
+                            clinically_relevant_criterion_rater_2)))) %>%
+  ungroup()
+
+### remove non-criterion effects
+data_reextracted_criterion <- data_reextracted %>%
+  filter(criterion_effect == TRUE) 
+
+### remove non-clinical criterion variables
+data_reextracted_criterion_clinically_relevant <- data_reextracted_criterion %>%
+  filter(clinically_relevant == TRUE) 
+
+
+## sample sizes in published IRAP research, taken from a separate project
+data_sample_sizes <- read_csv("../data/sample size data/data_irap.csv") 
+
+data_sample_sizes_vector <- data_sample_sizes |>
+  drop_na(n_participants_after_exclusions) |>
+  pull(n_participants_after_exclusions)
 
 ```
 
@@ -198,7 +228,7 @@ data_power_verified$required_n_verified[8] <-
 
 data_power_verified %>%
   kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -264,7 +294,7 @@ predictions_reproduced_printing <- predictions_reproduced %>%
 # predictions_reproduced %>%
 #   round_df(2) %>%
 #   kable() %>%
-#   kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+#   kable_classic(full_width = FALSE)
 
 # plot
 data_forest <- data_recalculated_variance %>%
@@ -489,14 +519,14 @@ data_weighted_effect_sizes %>%
   summarize(n_incongruent = sum(ifelse(congruence == "Incongruent", TRUE, FALSE)),
             percent_incongruent = round_half_up(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
   kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_classic(full_width = FALSE)
 
 data_weighted_effect_sizes %>%
   filter(difference != 0) %>%
   select(article, r_recalculated_weighted_mean, mean_r_forest_plot_numeric, difference, congruence) %>%
   round_df(2) %>%
   kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -515,7 +545,7 @@ Laken’s (2016) describes incorrect inclusions as inclusion of effect sizes tha
 data_vahey %>%
   count(involves_external_criterion) %>%
   kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_classic(full_width = FALSE)
 
 ```
 
@@ -524,28 +554,6 @@ data_vahey %>%
 “Collectively, these 15 articles yielded 56 statistical effects between various clinically focused IRAP effects and their respective criterion variables. ... of the 56 statistical effects only 8 (i.e. 14%) were not initially cited by both authors for inclusion.” (Vahey et al., 2015, p. 60)
 
 Vahey et al. did not report how many effect sizes they excluded. 
-
-```{r}
-
-data_reextracted <- read.csv("../data/data_reextracted_and_annotated.csv") %>%
-  # remove effects that merely repeat what vahey found, which are replaced by other rows that do new extractions for a corrispondonding effect. 
-  filter(replaced_effect == FALSE) %>%
-  # mark each effect as clinically relevant only if both raters scored it as such
-  rowwise() %>%
-  mutate(clinically_relevant = 
-           as.logical(max(c(clinically_relevant_criterion_rater_1,
-                            clinically_relevant_criterion_rater_2)))) %>%
-  ungroup()
-
-# remove non-criterion effects
-data_reextracted_criterion <- data_reextracted %>%
-  filter(criterion_effect == TRUE) 
-
-# remove non-clinical criterion variables
-data_reextracted_criterion_clinically_relevant <- data_reextracted_criterion %>%
-  filter(clinically_relevant == TRUE) 
-
-```
 
 I reviewed these same 15 articles and followed Vahey et al.'s (2015) same inclusion criteria (i.e., like Vahey, I did not limit myself to effect sizes reported in the articles but also considered ones implied within the articles. Like Vahey et al., where necessary I contacted the original authors to obtain additional information about effect sizes). 
 
@@ -562,7 +570,7 @@ data_raters %>%
   mutate(agreement = ifelse(clinically_relevant_criterion_rater_1 == clinically_relevant_criterion_rater_2, TRUE, FALSE)) %>%
   summarize(interrater_percent_agreement = round_half_up(mean(agreement, na.rm = TRUE), 1)) %>%
   kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_classic(full_width = FALSE)
 
 kappa2(data_raters, "unweighted")
 
@@ -581,7 +589,7 @@ Details of the meta-analytic strategy, which used contemporary methods:
 - REML estimator rather than Hunter & Schmidt.
 - Multilevel meta-analysis model rather than weighted-averaging of effect sizes (random intercept for source study).
 
-```{r fig.height=33, fig.width=7.5}
+```{r fig.height=39, fig.width=7.5}
 
 total_n_new <- data_reextracted_criterion_clinically_relevant %>%
   distinct(article, n_from_paper) %>%
@@ -647,9 +655,9 @@ data_forest_new <- data_for_meta_new %>%
   #                  r = predictions_new$pred,
   #                  lower = predictions_new$ci.lb,
   #                  upper = predictions_new$ci.ub)) %>%
-  bind_rows(tibble(article_abbreviated = c("Meta (confidence interval)", 
-                                           "Meta (credibility interval)", 
-                                           "Meta (prediction interval)"),
+  bind_rows(tibble(article_abbreviated = c("Meta-analysis (3-level RE confidence interval)", 
+                                           "Meta-analysis (3-level RE credibility interval)",
+                                           "Meta-analysis (3-level RE prediction interval)"),
                    n = 35, # arbitrary number to make the diamond an appropriate size
                    r = c(predictions_new$pred, 
                          predictions_new$pred, 
@@ -666,9 +674,9 @@ data_forest_new <- data_for_meta_new %>%
   mutate(size = n/sum(n),
          n = ifelse(str_detect(article_abbreviated, "Meta"), total_n_new, n),
          article_abbreviated = fct_relevel(article_abbreviated,
-                                           "Meta (confidence interval)", 
-                                           "Meta (credibility interval)",
-                                           "Meta (prediction interval)")) %>%
+                                           "Meta-analysis (3-level RE confidence interval)", 
+                                           "Meta-analysis (3-level RE credibility interval)",
+                                           "Meta-analysis (3-level RE prediction interval)")) %>%
   mutate(` ` = paste(rep(" ", 35), collapse = " ")) %>%
   select(Article = article_abbreviated, ` `, r, lower, upper, n, size) %>%
   mutate(r     = round_half_up(r, 2),
@@ -789,9 +797,31 @@ data_power_new$required_n_new[8] <-
              alternative = "greater")$n %>%
   ceiling()
 
+# print
 data_power_new %>%
   kable() %>%
-  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+  kable_classic(full_width = FALSE)
+
+# compare power analysis sample sizes to the published literature
+data_power_new %>%
+  rowwise() %>%
+  mutate(percent_of_publications_meeting_required_n_verified = janitor::round_half_up(mean(data_sample_sizes_vector > required_n_verified)*100, 1),
+         percent_of_publications_meeting_required_n_new = janitor::round_half_up(mean(data_sample_sizes_vector > required_n_new)*100, 1)) %>%
+  ungroup() %>%
+  select(test, tails, 
+         required_n_verified,
+         percent_of_publications_meeting_required_n_verified,
+         required_n_new,
+         percent_of_publications_meeting_required_n_new) %>%
+  kable() %>%
+  kable_classic(full_width = FALSE)
+
+data_sample_sizes |>
+  distinct(Title, study_design_ignoring_trial_type_comparisons) |>
+  count(study_design_ignoring_trial_type_comparisons) |>
+  mutate(percent = janitor::round_half_up(n/sum(n)*100, 1)) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
 
 ```
 
