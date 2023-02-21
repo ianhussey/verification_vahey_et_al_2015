@@ -391,8 +391,8 @@ predictions_reproduced_transformed <-
   as.data.frame() %>%
   select(-se) %>%
   # cr following Field & Gillett (2010) equation 5, where s_r^2 == tau2 as they both estimate the variance in population correlations. e.g., see Field's script "h_s syntax.sps" which refers to this as both tau and s_r^2 depending on the meta analytic approach
-  mutate(cr.lb = pred - 1.96*sqrt(fit_reproduced$tau2),
-         cr.ub = pred + 1.96*sqrt(fit_reproduced$tau2))
+  mutate(cr.lb = pred - 1.96*sqrt(fit_reproduced_transformed$tau2),
+         cr.ub = pred + 1.96*sqrt(fit_reproduced_transformed$tau2))
 
 predictions_reproduced_transformed_backtransformed <-
   predictions_reproduced_transformed %>%
@@ -458,6 +458,171 @@ ggplot2::ggsave(filename = "plots/forest plot Hunter & Schmidt method with Fishe
 ```
 
 Meta effect: `r meta_effect_string(fit_reproduced_transformed, predictions_reproduced_transformed_backtransformed)`.
+
+## Funnel plot
+
+Vahey et al. (2015) noted that "“The funnel plot ... indicated that this meta-effect was not subject to publication bias.” (Vahey et al., 2015, p. 59)". 
+However, the Cochrane handbook (since at least version 5, which was published in 2011, prior to the preparation of Vahey et al.'s manuscript) notes in section 10.4.3.1 "Recommendations on testing for funnel plot asymmetry" that "review authors should remember that, because the tests typically have relatively low power, even when a test does not provide evidence of funnel plot asymmetry, bias (including publication bias) cannot be excluded." (https://handbook-5-1.cochrane.org/chapter_10/10_4_3_1_recommendations_on_testing_for_funnel_plot_asymmetry.htm). That is, as with p values, absence of evidence (of bias) does not represent evidence of absence (of bias). As such, and especially in light of Vahey et al. including only 15 averaged effect sizes, it would have been more appropriate to conclude that there was no evidence of publication bias rather than there was evidence of no publication bias. 
+
+The meta analysis doesn't mention r-to-z transformations and back transformations, and the SPSS script that Vahey stated he used didn't employ them, but Vahey et al.'s funnel plot is stated to include "A funnel plot of Fisher Z-transformed (standardised) versions of the 15 independent criterion r effects included in the meta-analysis (Zr) versus their corresponding standard errors".
+
+```{r fig.height=5, fig.width=5}
+
+metafor::funnel(fit_reproduced_transformed, 
+                at = c(0, .2, .4, .6, .8, 1),
+                ylim = c(0.35, 0),
+                xlab = expression(italic(Z)[r]),
+                #ylab = expression(Standard ~ Error ~ of ~ italic(Z)[r]),
+                steps = 8,
+                #main = "Standard Error",
+                back = "white",
+                pch = c(1, 1, 1, 1, 1, 1, 1, 1, 1, 19, 1, 1, 1, 1, 1))
+                #col = c("darkgrey", "darkgrey", "darkgrey", "darkgrey", "darkgrey", "darkgrey", "darkgrey", "darkgrey", "darkgrey", "black", "darkgrey", "darkgrey", "darkgrey", "darkgrey", "darkgrey"))
+points(x = .543, y = .158, pch = 8, col = "red")
+
+```
+
+The location of one data point is different in the recreation of the funnel plot from the values listed in their forest plot (transformed using Fischer's r-to-z transformation, based on the description of the plot in Vahey et al. 2015), i.e., the effect for Nicholson, McCourt & Barnes-Holmes (2013). This effect is highlighted in the plot in black. In Vahey et al. (2015) this effect appeared approximately in the location marked with the red asterisk.  
+
+## Sensitivity analysis
+
+Vahey et al. (2015) stated: “We confirmed this [absence of publication bias] by conducting a Vevea and Wood's (2005) sensitivity analysis which systematically examined the impact that the following range of publication bias scenarios would have had on our random effects meta-analysis: ‘moderate onetailed selection’, ‘moderate two-tailed selection’, ‘severe onetailed selection’ and ‘severe two-tailed selection’. Given that the meta-effect obtained with the current dataset varied by very little regardless of which form of publication bias we modelled with the Vevea and Woods method, it suggests that the current metaanalysis was not subject to publication bias (i.e. the various scenarios all reduced the size of the meta-effect r by the very small respective amounts of .007, .007, .016, .016).” (Vahey et al., 2015, p. 62)
+
+### Reproduction attempt 1
+
+```{r}
+
+tryCatch(
+  
+  {
+    # code taken from metafor::selmodel() to implement vevea & woods (2005) selection models as described in Vahey et al. (2015)
+    tab <- data.frame(
+      steps = c(0.005, 0.01, 0.05, 0.10, 0.25, 0.35, 0.50, 0.65, 0.75, 0.90, 0.95, 0.99, 0.995, 1),
+      delta.mod.1 = c(1, 0.99, 0.95, 0.80, 0.75, 0.65, 0.60, 0.55, 0.50, 0.50, 0.50, 0.50, 0.50, 0.50),
+      delta.mod.2 = c(1, 0.99, 0.95, 0.90, 0.80, 0.75, 0.60, 0.60, 0.75, 0.80, 0.90, 0.95, 0.99, 1.00),
+      delta.sev.1 = c(1, 0.99, 0.90, 0.75, 0.60, 0.50, 0.40, 0.35, 0.30, 0.25, 0.10, 0.10, 0.10, 0.10),
+      delta.sev.2 = c(1, 0.99, 0.90, 0.75, 0.60, 0.50, 0.25, 0.25, 0.50, 0.60, 0.75, 0.90, 0.99, 1.00))
+    
+    sel <- lapply(
+      tab[-1], function(delta) {
+        selmodel(fit_reproduced_transformed, 
+                 type = "stepfun", 
+                 steps = tab$steps, 
+                 delta = delta)
+      }
+    )
+    
+    res <- transf.ztor(c(fit_reproduced_transformed$beta, sapply(sel, function(x) x$beta)))
+    
+    deltas = res - res[1]
+    
+    tibble(model = c("moderate onetailed selection", "moderate two-tailed selection", "severe onetailed selection", "severe two-tailed selection"),
+           delta_es_vahey = c(.007, .007, .016, .016),
+           abs_delta_es_recalculated = abs(janitor::round_half_up(deltas[-1], 3))) |>
+      mutate(reproduced = delta_es_vahey==abs_delta_es_recalculated) |>
+      kable() |>
+      kable_classic(full_width = FALSE)
+  },
+  error = function(cond) {
+    message("Throws error. Here's the original error message:")
+    message(cond)
+  }
+)
+
+```
+
+Vahey et al stated that their meta analytic model weighted by N. However, selection models, at least when implemented using metafor, do not allow for use of models with custom weights (ie other than inverse variance).   
+
+### Reproduction attempt 2
+
+I therefore refitted the meta analysis model without the custom weights (i.e., weighted by inverse variance instead).
+
+```{r}
+
+fit_temp <- 
+  rma(yi      = yi, 
+      vi      = vi, 
+      #weights = ni, # Hunter Schmidt method requires weighting by N
+      method  = "HS", # Hunter Schmidt method
+      data    = data_recalculated_variance_transformed,
+      slab    = article_abbreviated,
+      digits  = 10)
+
+# code taken from metafor::selmodel() to implement vevea & woods (2005) selection models as described in Vahey et al. (2015)
+tab <- data.frame(
+  steps = c(0.005, 0.01, 0.05, 0.10, 0.25, 0.35, 0.50, 0.65, 0.75, 0.90, 0.95, 0.99, 0.995, 1),
+  delta.mod.1 = c(1, 0.99, 0.95, 0.80, 0.75, 0.65, 0.60, 0.55, 0.50, 0.50, 0.50, 0.50, 0.50, 0.50),
+  delta.mod.2 = c(1, 0.99, 0.95, 0.90, 0.80, 0.75, 0.60, 0.60, 0.75, 0.80, 0.90, 0.95, 0.99, 1.00),
+  delta.sev.1 = c(1, 0.99, 0.90, 0.75, 0.60, 0.50, 0.40, 0.35, 0.30, 0.25, 0.10, 0.10, 0.10, 0.10),
+  delta.sev.2 = c(1, 0.99, 0.90, 0.75, 0.60, 0.50, 0.25, 0.25, 0.50, 0.60, 0.75, 0.90, 0.99, 1.00))
+
+sel <- lapply(
+  tab[-1], function(delta) {
+    selmodel(fit_temp, 
+             type = "stepfun", 
+             steps = tab$steps, 
+             delta = delta)
+  }
+)
+
+res <- transf.ztor(c(fit_temp$beta, sapply(sel, function(x) x$beta)))
+
+deltas = res - res[1]
+
+tibble(model = c("moderate onetailed selection", "moderate two-tailed selection", "severe onetailed selection", "severe two-tailed selection"),
+       delta_es_vahey = c(.007, .007, .016, .016),
+       abs_delta_es_recalculated = abs(janitor::round_half_up(deltas[-1], 3)),
+       es_recalculated = janitor::round_half_up(res[-1], 3)) |>
+  mutate(reproduced = delta_es_vahey==abs_delta_es_recalculated) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+Meta r in refitted model = `r as.numeric(janitor::round_half_up(transf.ztor(fit_temp$beta), 2))`.
+
+Numeric values of the differences in effect size reproduced in 2 of 4 cases, on the assumption that the differences are absolute differences. Magnitude of the differences are in line with Vahey et al.'s. 
+
+However, the use of a section model such as this cannot "confirm" the absence of publication bias. It merely presents a corrected meta effect size in light of very specific and untestable assumptions.  
+
+### Alternative: PET model
+
+Carter et al. (2019) "Correcting for Bias in Psychology: A Comparison of Meta-Analytic Methods" compared the Vevea & Woods (2005) selection model, which they refer to as 3PSM (three parameter selection model) with other bias detection and correction methods in a large scale simulation study. They concluded that no method is a silver bullet, and all perform poorly under some conditions, and that these conditions are generally untestable in real data. They recommend that multiple methods should be reported, and that ultimately only improvements to the primary literature will increase the quality of our evidence. Without attempting to examine this exhaustively, I illustrate how choice of bias correction method can influence results by calculating one other method method considered by Carter et al. (2019): the PET correction. In terms of implementation, the PET correction simply includes the standard error as moderator within the meta-analytic model.   
+
+```{r}
+
+# fit model
+fit_reproduced_transformed_pet <- 
+  rma(yi      = yi, 
+      vi      = vi, 
+      mods    = sqrt(vi), # PET model adds moderation by SE
+      weights = ni, # Hunter Schmidt method requires weighting by N
+      method  = "HS", # Hunter Schmidt method
+      data    = data_recalculated_variance_transformed,
+      slab    = article_abbreviated,
+      digits  = 10)
+
+predictions_reproduced_transformed_pet <- 
+  predict(fit_reproduced_transformed_pet) %>%
+  as.data.frame() %>%
+  select(-se) %>%
+  # cr following Field & Gillett (2010) equation 5, where s_r^2 == tau2 as they both estimate the variance in population correlations. e.g., see Field's script "h_s syntax.sps" which refers to this as both tau and s_r^2 depending on the meta analytic approach
+  mutate(cr.lb = pred - 1.96*sqrt(fit_reproduced_transformed_pet$tau2),
+         cr.ub = pred + 1.96*sqrt(fit_reproduced_transformed_pet$tau2))
+
+tibble(meta_r = transf.ztor(fit_reproduced_transformed_pet$beta[1]),
+       ci_lower = transf.ztor(fit_reproduced_transformed_pet$ci.lb[1]),
+       ci_upper = transf.ztor(fit_reproduced_transformed_pet$ci.ub[1]),
+       p = fit_reproduced_transformed_pet$pval[1]) |>
+  mutate(delta_base_vs_pet = meta_r - fit_reproduced_transformed$beta) |>
+  round_df(2) |>
+  kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+- Whereas Revea & Woods' (2005) 3PSM, as employed by Vahey et al. (2015), suggested bias-corrected effect sizes that were within .02 of the uncorrected effect size, PET correction resulted in an effect size that was -.16 smaller than the uncorrected, and non-significant from zero. The choice of bias correction method therefore greatly influences the meta-effect size.
+- More importantly, these bias correction methods do not provide evidence that the literature is not biased in a given way, as Vahey et al. argued. Rather, these methods assume that the bias is biased in a given way and make predictions about what the true effect size is under those assumptions. These assumptions are untestable in real data. As such, Vahey et al. (2015) presented as conclusions what were in fact assumptions, and as such over stated evidence that their estimate of the IRAP's criterion validity was unbiased by p-hacking, publication bias, etc.
 
 ## Average effect sizes 
 
