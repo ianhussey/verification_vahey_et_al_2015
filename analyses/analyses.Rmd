@@ -108,6 +108,47 @@ data_sample_sizes_vector <- data_sample_sizes |>
 
 ```
 
+# Plausibility of Vahey et al.'s (2015) estimates in light of the IRAP's reliability
+
+```{r}
+
+# Calculate corrected correlation
+attenuation_correction <- function(r_observed, reliability_x, reliability_y){
+  r_corrected <- r_observed / sqrt(reliability_x * reliability_y)
+  return(r_corrected)
+}
+
+r_observed_vahey <- .45 # Vahey's criterion meta-estimate
+reliability_x_ic_hussey <- .27  # Hussey & Drake's internal consistency estimate at the trial type level
+reliability_x_trt_hussey <- .18 # Hussey & Drake's test-retest estimate at the trial type level
+reliability_y_assumed <- .90 # assume the criterion tasks measure very well on average
+
+r_corrected_internal_consistency <- attenuation_correction(r_observed = r_observed_vahey, 
+                                                           reliability_x = reliability_x_ic_hussey,
+                                                           reliability_y = reliability_y_assumed) 
+
+r_corrected_test_retest <- attenuation_correction(r_observed = r_observed_vahey, 
+                                                  reliability_x = reliability_x_trt_hussey, 
+                                                  reliability_y = reliability_y_assumed) 
+
+```
+
+- Vahey et al.'s estimate of the IRAP's average correlation with criterion variables = `r r_observed_vahey`
+- Different features of reliability can be estimated, with varying implications. Here I estimate for the two most common forms, internal consistency and test-retest reliability.
+  - Hussey & Drake's estimate of internal consistency estimate when scoring the task as four separate trial-types (which IRAP proponents recommend) = `r reliability_x_ic_hussey`
+  - Hussey & Drake's estimate of test-retest reliability estimate when scoring the task as four separate trial-types (which IRAP proponents recommend) = `r reliability_x_trt_hussey`
+- Assumed mean reliability of the criterion tasks (generous/liberal assumption of very high reliability) = `r reliability_y_assumed`. Note that all values of the corrected correlations will increase further if this value is lowered, so this is a likely best case scenario for the IRAP.
+
+- Correcting Vahey's observed correlation for attenuation due to unreliability, the corrected association between the IRAP and criterion variables is:
+  - When using the estimate of internal consistency, average association with criterion variables = `r janitor::round_half_up(r_corrected_internal_consistency, 2)`
+  - When using the estimate of test-retest reliability, average association with criterion variables = `r janitor::round_half_up(r_corrected_test_retest, 2)`
+
+In the case of internal consistency, this would mean that the IRAP demonstrates near-perfect associations with criterion variables, despite (a) these criterion variables being taken from a wide range of clinical domains, and (b) given that this is the average correlation, some observed correlations would need to be higher than this again.
+
+In the case of test-retest reliability, the estimate is beyond correlation's necessary boundaries [0,1], ie this value is impossible. 
+
+In summary, either Vahey et al.'s (2015) estimate of average criterion associations is somewhere between highly implausible and mathematically impossible given the IRAP's reliability (i.e., assuming Hussey & Drake are correct about reliability), or Hussey & Drake's (2020) estimate of the IRAP's average reliability is implausibly low given the IRAP's high criterion validity (i.e., assuming Vahey et al. are correct about validity). Ultimately it will be up to others to inspect our openly available code and data for Hussey & Drake (2020) to determine if our analysis is sound, but we are confident in the numbers. As such, this motivates us to inspect Vahey et al.'s (2015) estimates to determine if the issue lies there instead. This provides a key rationale for scrutinizing Vahey et al. (2015) for errors.
+
 # Reproducibility of original analylses
 
 ## Power analyses 
