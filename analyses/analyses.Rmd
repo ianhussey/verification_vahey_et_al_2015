@@ -11,6 +11,11 @@ output:
     toc_float: yes
 ---
 
+# TODO
+
+- examine use of na.omit, authors_include_bh, and contents of clinically_relevant
+- NOTE SOMEWHERE THAT N IN EACH CELL IN THE TABLE IS TOTAL N FOR THE STUDY, EVEN FOR THE INDEPENDENT T TESTS
+
 ```{r, include=FALSE}
 
 knitr::opts_chunk$set(message = FALSE,
