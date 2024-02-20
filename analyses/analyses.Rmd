@@ -11,11 +11,6 @@ output:
     toc_float: yes
 ---
 
-# TODO
-
-- examine use of na.omit, authors_include_bh, and contents of clinically_relevant
-- NOTE SOMEWHERE THAT N IN EACH CELL IN THE TABLE IS TOTAL N FOR THE STUDY, EVEN FOR THE INDEPENDENT T TESTS
-
 ```{r, include=FALSE}
 
 knitr::opts_chunk$set(message = FALSE,
@@ -108,7 +103,62 @@ data_sample_sizes_vector <- data_sample_sizes |>
 
 ```
 
+# Correct application of their inclusion criterion in their data
+
+Their inclusion criterion is stated to be “co-variation of an IRAP effect with a corresponding clinically-focused criterion variable,” but many of the effects in their dataset refer to one-sample t-tests with no criterion variable. Quantify how many.
+
+```{r}
+
+data_vahey |>
+  summarize(percent_doesnt_involve_external_criterion = janitor::round_half_up(1 - mean(involves_external_criterion), 1)*100,
+            count_doesnt_involve_external_criterion = sum(involves_external_criterion),
+            total_effects = n()) |>
+  gather()
+
+```
+
 # Plausibility of Vahey et al.'s (2015) estimates in light of the IRAP's reliability
+
+## Using Golijani-Moghaddam et al.'s (2013) estimates
+
+Which were available to Vahey et al. (2015) at their time of writing, although they aren't great estimates by today's standards.
+
+```{r}
+
+# Calculate corrected correlation
+attenuation_correction <- function(r_observed, reliability_x, reliability_y){
+  r_corrected <- r_observed / sqrt(reliability_x * reliability_y)
+  return(r_corrected)
+}
+
+r_observed_vahey <- .45 # Vahey's criterion meta-estimate
+reliability_x_ic_hussey <- .65  # Golijani-Moghaddam et al.'s (2013) internal consistency estimate
+reliability_x_trt_hussey <- .49 # Golijani-Moghaddam et al.'s (2013) test-retest estimate
+reliability_y_assumed <- .90 # assume the criterion tasks measure very well on average
+
+r_corrected_internal_consistency <- attenuation_correction(r_observed = r_observed_vahey, 
+                                                           reliability_x = reliability_x_ic_hussey,
+                                                           reliability_y = reliability_y_assumed) 
+
+r_corrected_test_retest <- attenuation_correction(r_observed = r_observed_vahey, 
+                                                  reliability_x = reliability_x_trt_hussey, 
+                                                  reliability_y = reliability_y_assumed) 
+
+```
+
+- Vahey et al.'s estimate of the IRAP's average correlation with criterion variables = `r r_observed_vahey`
+- Different features of reliability can be estimated, with varying implications. Here I estimate for the two most common forms, internal consistency and test-retest reliability.
+  - Golijani-Moghaddam et al.'s (2013) estimate of internal consistency estimate = `r reliability_x_ic_hussey`
+  - Golijani-Moghaddam et al.'s (2013) estimate of test-retest reliability estimate = `r reliability_x_trt_hussey`
+- Assumed mean reliability of the criterion tasks (generous/liberal assumption of very high reliability) = `r reliability_y_assumed`. Note that all values of the corrected correlations will increase further if this value is lowered, so this is a likely best case scenario for the IRAP.
+
+- Correcting Vahey's observed correlation for attenuation due to unreliability, the corrected association between the IRAP and criterion variables is:
+  - When using the estimate of internal consistency, average association with criterion variables = `r janitor::round_half_up(r_corrected_internal_consistency, 2)`
+  - When using the estimate of test-retest reliability, average association with criterion variables = `r janitor::round_half_up(r_corrected_test_retest, 2)`
+  
+## Using Hussey & Drake's (2020) estimates
+
+Which were not available to Vahey et al. (2015) at their time of writing, but are the best contemporary estimates.
 
 ```{r}
 
@@ -373,7 +423,7 @@ p_reproduced <-
                        est        = data_forest$r,
                        lower      = data_forest$lower, 
                        upper      = data_forest$upper,
-                       sizes      = 1/data_forest$size,
+                       sizes      = data_forest$size*10,
                        #is_summary = c(rep(FALSE, nrow(data_forest)-1), TRUE),
                        is_summary = c(rep(FALSE, nrow(data_forest)-2), TRUE, TRUE),
                        ci_column  = 2,
@@ -478,7 +528,7 @@ p_reproduced_transformed <-
                        est        = data_forest_transformed$r,
                        lower      = data_forest_transformed$lower, 
                        upper      = data_forest_transformed$upper,
-                       sizes      = 1/data_forest_transformed$size,
+                       sizes      = data_forest_transformed$size*10,
                        #is_summary = c(rep(FALSE, nrow(data_forest)-1), TRUE),
                        is_summary = c(rep(FALSE, nrow(data_forest)-2), TRUE, TRUE),
                        ci_column  = 2,
@@ -531,7 +581,7 @@ Vahey et al. (2015) stated: “We confirmed this [absence of publication bias] b
 
 ### Reproduction attempt 1
 
-```{r}
+```{r eval=FALSE, include=TRUE}
 
 tryCatch(
   
@@ -894,7 +944,7 @@ p_new <-
                        est        = data_forest_new$r,
                        lower      = data_forest_new$lower, 
                        upper      = data_forest_new$upper,
-                       sizes      = 1/data_forest_new$size,
+                       sizes      = data_forest_new$size*100,
                        # is_summary = c(rep(FALSE, nrow(data_forest_new)-1), TRUE),
                        is_summary = c(rep(FALSE, nrow(data_forest_new)-3), 
                                       rep(TRUE, 3)),
