@@ -14,7 +14,8 @@ output:
 # TODO
 
 - examine use of na.omit, authors_include_bh, and contents of clinically_relevant
-- NOTE SOMEWHERE THAT N IN EACH CELL IN THE TABLE IS TOTAL N FOR THE STUDY, EVEN FOR THE INDEPENDENT T TESTS
+- NOTE SOMEWHERE THAT N IN EACH CELL IN THE POWER ANALYSIS TABLE IS TOTAL N FOR THE STUDY, EVEN FOR THE INDEPENDENT T TESTS
+- CHECK THAT THE 'INCLUded in vahey' TAGS ARE CORRECT for the meta reanalysis moderation by inclusion.
 
 ```{r, include=FALSE}
 
@@ -34,6 +35,7 @@ library(metafor)
 library(forestploter)
 library(janitor)
 library(greekLetters)
+library(clubSandwich)
 library(knitr)
 library(kableExtra)
 
@@ -683,7 +685,11 @@ However, the use of a section model such as this cannot "confirm" the absence of
 
 ### Alternative: PET model
 
-Carter et al. (2019) "Correcting for Bias in Psychology: A Comparison of Meta-Analytic Methods" compared the Vevea & Woods (2005) selection model, which they refer to as 3PSM (three parameter selection model) with other bias detection and correction methods in a large scale simulation study. They concluded that no method is a silver bullet, and all perform poorly under some conditions, and that these conditions are generally untestable in real data. They recommend that multiple methods should be reported, and that ultimately only improvements to the primary literature will increase the quality of our evidence. Without attempting to examine this exhaustively, I illustrate how choice of bias correction method can influence results by calculating one other method method considered by Carter et al. (2019): the PET correction. In terms of implementation, the PET correction simply includes the standard error as moderator within the meta-analytic model.   
+Vahey et al. (2015) stated that they were interested in evidence of funnel plot asymmetry but only assessed this via a visual assessment of the funnel plot (p. 61-62). It may be more appropriate to model this quantiatively, therefore I do it here. This also serves as a useful sensitivity test, i.e., would simlar absence of evidence of bias arise had other tests been employed. The choice of an alternative is both (a) non-trivial give that different methods perform differently under different (unknowable) circumstances and (b) these alternatives are intended to be illusative rather than exhaustive.
+
+Regarding the choice of an alternative test: Carter et al. (2019) "Correcting for Bias in Psychology: A Comparison of Meta-Analytic Methods" compared the Vevea & Woods (2005) selection model that Vahey et al employed, which they refer to as 3PSM (three parameter selection model), against other bias detection and correction methods in a large scale simulation study. They concluded that no method is a silver bullet, and all perform poorly under some conditions, and that these conditions are generally untestable in real data. They recommend that multiple methods should be reported, and that ultimately only improvements to the primary literature will increase the quality of our evidence. Without attempting to examine this exhaustively, I illustrate how choice of bias correction method can influence results by calculating one other method method considered by Carter et al. (2019): the PET correction. In terms of implementation, the PET correction simply includes the standard error as moderator within the meta-analytic model. 
+
+Note that this correction makes model is therfore equivalent to the correction employed within the commonly-used Eggar's test for funnel plot asymmetry. 
 
 ```{r}
 
@@ -691,7 +697,7 @@ Carter et al. (2019) "Correcting for Bias in Psychology: A Comparison of Meta-An
 fit_reproduced_transformed_pet <- 
   rma(yi      = yi, 
       vi      = vi, 
-      mods    = sqrt(vi), # PET model adds moderation by SE
+      mods    = ~ sqrt(vi), # PET model adds moderation by SE
       weights = ni, # Hunter Schmidt method requires weighting by N
       method  = "HS", # Hunter Schmidt method
       data    = data_recalculated_variance_transformed,
@@ -863,7 +869,7 @@ total_n_new <- data_reextracted_criterion_clinically_relevant %>%
 # exclusions and transformations
 data_for_meta_new <- data_reextracted_criterion_clinically_relevant %>%
   mutate(variables = paste(irap_variable, criterion_variable, sep = "-")) %>%
-  dplyr::select(article, variables, r_from_paper, n_from_paper, authors_include_bh) %>%
+  dplyr::select(article, variables, r_from_paper, n_from_paper) %>%
   na.omit() %>%
   escalc(measure = "ZCOR", 
          ri = r_from_paper, 
@@ -872,7 +878,7 @@ data_for_meta_new <- data_reextracted_criterion_clinically_relevant %>%
          slab = paste(article, variables), 
          digits = 10) %>%
   rename(ni = n_from_paper) %>%
-  dplyr::select(article, variables, yi, vi, ni, authors_include_bh) %>%
+  dplyr::select(article, variables, yi, vi, ni) %>%
   na.omit() %>%
   group_by(article) %>%
   mutate(es_number = row_number(),
@@ -972,7 +978,115 @@ ggplot2::ggsave(filename = "plots/forest plot new multilevel model.pdf",
 
 Meta effect: `r meta_effect_string(fit_new, predictions_new_backtransformed)`.
 
+## Moderation by inclusion in the original meta
+
+```{r}
+
+total_n_new <- data_reextracted_criterion_clinically_relevant %>%
+  distinct(article, n_from_paper) %>%
+  group_by(article) %>%
+  filter(n_from_paper == max(n_from_paper)) %>%
+  ungroup() %>%
+  summarize(total_n = sum(n_from_paper, na.rm = TRUE)) %>%
+  pull(total_n)
+
+# exclusions and transformations
+data_for_meta_new <- data_reextracted_criterion_clinically_relevant %>%
+  mutate(included_in_vahey = !is.na(r_vahey)) %>%
+  mutate(variables = paste(irap_variable, criterion_variable, sep = "-")) %>%
+  dplyr::select(article, variables, r_from_paper, n_from_paper, authors_include_bh, included_in_vahey) %>%
+  na.omit() %>%
+  escalc(measure = "ZCOR", 
+         ri = r_from_paper, 
+         ni = n_from_paper,
+         data = ., 
+         slab = paste(article, variables), 
+         digits = 10) %>%
+  rename(ni = n_from_paper) %>%
+  dplyr::select(article, variables, yi, vi, ni, authors_include_bh, included_in_vahey) %>%
+  na.omit() %>%
+  group_by(article) %>%
+  mutate(es_number = row_number(),
+         article_abbreviated = paste(article, es_number)) %>%
+  ungroup() %>%
+  mutate(lower = yi - sqrt(vi)*1.96,
+         upper = yi + sqrt(vi)*1.96)
+
+# fit 
+fit_new <- 
+  rma.mv(yi     = yi, 
+         V      = vi, 
+         random = ~ 1 | article, 
+         mods = ~ included_in_vahey,
+         method = "REML", 
+         data   = data_for_meta_new,
+         slab   = article_abbreviated,
+         digits = 10)
+
+summary(fit_new)
+
+transf.ztor(fit_new$b[1,1]) # meta r not included in vahey
+transf.ztor(fit_new$b[1,1] + fit_new$b[2,1]) # meta r included in vahey
+
+```
+
+- Moderation meta-analysis demonstrated that Vahey et al.'s selective inclusion of effects from the original studies greatly influenced the meta effect size. Moderation by inclusion in the Vahey or not was statistically significant, with included studies having effect sizes on average twice the size of excluded studies. 
+
+## Funnel plot
+
+For the sake of completeness, I create funnel plots here. These are of limited value by themselves as they ignore the multilevel structure of the data. 
+
+```{r fig.height=5, fig.width=5}
+
+funnel(fit_new, 
+       col = rgb(0.25, 0.25, 0.25, 0.25))
+
+```
+
+## PET model / Eggar test for multilevel data 
+
+Recent simulation studies point out the problems with ignoring multilevel structure when assessing bias (as well as estimating the meta effect) is problematic, and suggest a multilevel extension of Eggar's test ([Rodgers & Pustejovsky, 2019](https://osf.io/preprints/metaarxiv/vqp8u)), which is also referred to elsewhere (e.g., Carter et al., 2019) as the PET model. This simply includes the standard error as a moderator, which allows us to test for the presence of bias (with some power concerns) and, more importantly, allows us to estimate the effect in the absence of this small sample bias.
+
+```{r}
+
+data_for_meta_new_mod <- data_for_meta_new |>
+  mutate(sei = sqrt(vi))
+
+fit_new_mod <-
+  rma.mv(yi     = yi,
+         V      = vi,
+         random = ~ 1 | article,
+         mods = ~ sei,
+         method = "REML",
+         data   = data_for_meta_new_mod,
+         slab   = article_abbreviated,
+         digits = 10)
+
+results_eggar <- coef_test(fit_new_mod, vcov = "CR2") |>
+  as_tibble() |>
+  mutate(r_estimate = transf.ztor(beta),
+         r_ci_lower = transf.ztor(beta - SE*1.96),
+         r_ci_upper = transf.ztor(beta + SE*1.96),
+         p_Satt = as.character(round_half_up(p_Satt, 5))) |>
+  round_df(2) |>
+  select(coef = Coef, t = tstat, df = df_Satt, p = p_Satt,
+         r_estimate, r_ci_lower, r_ci_upper) 
+
+results_eggar %>%
+  kable() %>%
+  kable_classic(full_width = FALSE)
+
+```
+
+- The test of funnel plot asymmetry (i.e., the influence of small sample sizes on the meta effect size, where coef = 'sei') was statistically significant, indicating small sample bias. 
+- Perhaps more importantly, the estimate for the meta effect (coef = 'intercpt') refers to the meta-analytic effect size after correcting for small sample sizes (i.e., estimated for effects where the standard error approaches zero). The 95% CIs do not exlcude zero, and its p-value is non significant: r = `r results_eggar |> filter(coef == "intrcpt") |> pull(r_estimate)`, 95% CI [`r results_eggar |> filter(coef == "intrcpt") |> pull(r_ci_lower)`, `r results_eggar |> filter(coef == "intrcpt") |> pull(r_ci_upper)`], p = `r results_eggar |> filter(coef == "intrcpt") |> pull(p)`. 
+- Depending on whether you think it is possible that the influence of small sample bias is important to assess and correct for, as Vahey et al did, the IRAP's criterion validity falls from around r = .22 (i.e., similar to comparable measures like the IAT) to not detectably different from zero. 
+
 ## Power analyses
+
+Using Vahey et al.'s logic, I recalculate sample sizes using the meta effect size 
+
+### Ignoring small sample bias
 
 ```{r}
 
@@ -1082,6 +1196,122 @@ data_sample_sizes |>
   count(study_design_ignoring_trial_type_comparisons) |>
   mutate(percent = janitor::round_half_up(n/sum(n)*100, 1)) |>
   kable() |>
+  kable_classic(full_width = FALSE)
+
+```
+
+### Correcting for small sample bias
+
+Although note that this effect size is negative, suggesting that the IRAP's association with criterion variables is the opposite direction to that which would be intuitive.
+
+```{r}
+
+point_estimate_new <- results_eggar |> 
+  filter(coef == "intrcpt") |> 
+  pull(r_estimate) |>
+  abs()
+
+lower_ci_new <- results_eggar |> 
+  filter(coef == "intrcpt") |> 
+  pull(r_ci_upper) |>
+  abs()
+
+data_power_new <- data_power_verified %>%
+  mutate(effect_size_new = c(point_estimate_new,
+                             lower_ci_new,
+                             point_estimate_new,
+                             lower_ci_new,
+                             r_to_d(point_estimate_new),
+                             r_to_d(lower_ci_new),
+                             r_to_d(point_estimate_new),
+                             r_to_d(lower_ci_new)),
+         effect_size_new = round_half_up(effect_size_new, 2))
+
+data_power_new$required_n_new[1] <- 
+  pwr.r.test(n = NULL, 
+             r = point_estimate_new, 
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "greater")$n %>%
+  ceiling()
+
+data_power_new$required_n_new[2] <- 
+  pwr.r.test(n = NULL, 
+             r = lower_ci_new, 
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "greater")$n %>%
+  ceiling()
+
+data_power_new$required_n_new[3] <- 
+  pwr.r.test(n = NULL, 
+             r = point_estimate_new, 
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "two.sided")$n %>%
+  ceiling()
+
+data_power_new$required_n_new[4] <- 
+  pwr.r.test(n = NULL, 
+             r = lower_ci_new, 
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "two.sided")$n %>%
+  ceiling()
+
+data_power_new$required_n_new[5] <- 
+  pwr.t.test(n = NULL, 
+             d = r_to_d(point_estimate_new), 
+             type = "two.sample",
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "greater")$n %>%
+  ceiling()*2
+
+data_power_new$required_n_new[6] <- 
+  pwr.t.test(n = NULL, 
+             d = r_to_d(lower_ci_new), 
+             type = "two.sample",
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "greater")$n %>%
+  ceiling()*2
+
+data_power_new$required_n_new[7] <- 
+  pwr.t.test(n = NULL, 
+             d = r_to_d(point_estimate_new), 
+             type = "paired",
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "greater")$n %>%
+  ceiling()
+
+data_power_new$required_n_new[8] <- 
+  pwr.t.test(n = NULL, 
+             d = r_to_d(lower_ci_new), 
+             type = "paired",
+             sig.level = 0.05, 
+             power = 0.8, 
+             alternative = "greater")$n %>%
+  ceiling()
+
+# print
+data_power_new %>%
+  kable() %>%
+  kable_classic(full_width = FALSE)
+
+# compare power analysis sample sizes to the published literature
+data_power_new %>%
+  rowwise() %>%
+  mutate(percent_of_publications_meeting_required_n_verified = janitor::round_half_up(mean(data_sample_sizes_vector > required_n_verified)*100, 1),
+         percent_of_publications_meeting_required_n_new = janitor::round_half_up(mean(data_sample_sizes_vector > required_n_new)*100, 1)) %>%
+  ungroup() %>%
+  select(test, tails, 
+         required_n_verified,
+         percent_of_publications_meeting_required_n_verified,
+         required_n_new,
+         percent_of_publications_meeting_required_n_new) %>%
+  kable() %>%
   kable_classic(full_width = FALSE)
 
 ```
