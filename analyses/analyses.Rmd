@@ -751,26 +751,27 @@ data_weighted_effect_sizes <- data_vahey %>%
                      mean_r_forest_plot_numeric) %>%
               drop_na(),
             by = "article") %>%
-  mutate(congruence = ifelse(janitor::round_half_up(r_recalculated_weighted_mean, 2) == janitor::round_half_up(mean_r_forest_plot_numeric, 2), "Congruent", "Incongruent"),
-         congruence = fct_relevel(congruence, "Congruent", "Incongruent"),
+  mutate(Match = ifelse(janitor::round_half_up(r_recalculated_weighted_mean, 2) == janitor::round_half_up(mean_r_forest_plot_numeric, 2), "True", "False"),
+         Match = fct_relevel(Match, "True", "False"),
          difference = r_recalculated_weighted_mean - mean_r_forest_plot_numeric)
 
 # plot
 p_comparison_reaveraged <- 
   ggplot(data_weighted_effect_sizes, aes(mean_r_forest_plot_numeric, r_recalculated_weighted_mean)) +
-  geom_abline(slope = 1, linetype = "dotted") +
-  geom_point(aes(color = congruence, shape = congruence), size = 2.25) +
+  geom_abline(slope = 1, linetype = "dotted", alpha = 0.5) +
+  geom_point(aes(shape = Match), size = 2.25, alpha = .8) +
   theme_classic() +
   scale_color_viridis_d(begin = 0.25, end = 0.75) + 
-  theme(legend.position = "top", # c(0.25, 0.85),
-        legend.title = element_blank()) + 
+  scale_shape_manual(values = c(16, 4)) +
+  theme(legend.position = "bottom") + 
   #legend.box.background = element_rect(colour = "black")) +
   xlim(0.35, 0.75) +
   ylim(0.35, 0.75) +
   xlab("Reported in Vahey et al.'s (2015)\nforest plot") +
   ylab("Recalculated from Vahey et al.'s (2015)\nsupplementary materials") +
   annotate("text", x = .66, y = .45, size = 3, label = "Overestimates validity") +
-  annotate("text", x = .45, y = .66, size = 3, label = "Underestimates validity")
+  annotate("text", x = .45, y = .66, size = 3, label = "Underestimates validity") + 
+  coord_fixed(ratio = 1)
 
 p_comparison_reaveraged
 
