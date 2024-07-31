@@ -29,6 +29,7 @@ knitr::opts_chunk$set(message = FALSE,
 # dependencies
 library(tidyverse)
 library(effectsize)
+library(ggstance)
 library(pwr)
 library(irr)
 library(metafor)
@@ -207,6 +208,42 @@ In the case of test-retest reliability, the estimate is beyond correlation's nec
 In summary, either Vahey et al.'s (2015) estimate of average criterion associations is somewhere between highly implausible and mathematically impossible given the IRAP's reliability (i.e., assuming Hussey & Drake are correct about reliability), or Hussey & Drake's (2020) estimate of the IRAP's average reliability is implausibly low given the IRAP's high criterion validity (i.e., assuming Vahey et al. are correct about validity). Ultimately it will be up to others to inspect our openly available code and data for Hussey & Drake (2020) to determine if our analysis is sound, but we are confident in the numbers. As such, this motivates us to inspect Vahey et al.'s (2015) estimates to determine if the issue lies there instead. This provides a key rationale for scrutinizing Vahey et al. (2015) for errors.
 
 # Reproducibility of original analylses
+
+## Plot extracted data
+
+```{r}
+
+data_vahey |>
+  select(article_abbreviated, 
+         mean_r_forest_plot_numeric, 
+         ci_lower_forest_plot_numeric,
+         ci_upper_forest_plot_numeric) |>
+  drop_na() |>
+  mutate(article_abbreviated = fct_rev(article_abbreviated)) |>
+  ggplot(aes(mean_r_forest_plot_numeric, article_abbreviated)) +
+  geom_vline(xintercept = 0, linetype = "dotted") +
+  geom_linerangeh(aes(xmin = ci_lower_forest_plot_numeric, 
+                      xmax = ci_upper_forest_plot_numeric)) +
+  geom_point() +
+  scale_x_continuous(breaks = scales::breaks_pretty()) +
+  theme_linedraw() +
+  ylab("") +
+  xlab("r")
+
+ggsave(filename = "plot_of_extracted_values.pdf", 
+       path = "plots",
+       create.dir = TRUE,
+       width = 5,
+       height = 2.75)
+
+ggsave(filename = "plot_of_extracted_values.png", 
+       path = "plots",
+       create.dir = TRUE,
+       dpi = 600,
+       width = 5,
+       height = 2.75)
+
+```
 
 ## Power analyses 
 
@@ -497,6 +534,9 @@ predictions_reproduced_transformed_backtransformed <-
   mutate_all(transf.ztor) %>%
   round_df(2)
 
+predictions_reproduced_transformed %>%
+  round_df(2)
+
 # plot
 data_forest_transformed <- data_recalculated_variance_transformed %>%
   select(article_abbreviated,
@@ -784,14 +824,14 @@ ggplot2::ggsave(filename = "plots/scatter plot comparing effect sizes in forest 
 
 # table
 data_weighted_effect_sizes %>%
-  summarize(n_incongruent = sum(ifelse(congruence == "Incongruent", TRUE, FALSE)),
-            percent_incongruent = round_half_up(mean(ifelse(congruence == "Incongruent", TRUE, FALSE)), 2)*100) %>%
+  summarize(n_incongruent = sum(ifelse(Match == "False", TRUE, FALSE)),
+            percent_incongruent = round_half_up(mean(ifelse(Match == "False", TRUE, FALSE)), 2)*100) %>%
   kable() %>%
   kable_classic(full_width = FALSE)
 
 data_weighted_effect_sizes %>%
   filter(difference != 0) %>%
-  select(article, r_recalculated_weighted_mean, mean_r_forest_plot_numeric, difference, congruence) %>%
+  select(article, r_recalculated_weighted_mean, mean_r_forest_plot_numeric, difference, Match) %>%
   round_df(2) %>%
   kable() %>%
   kable_classic(full_width = FALSE)
