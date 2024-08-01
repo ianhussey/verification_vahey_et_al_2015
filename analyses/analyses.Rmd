@@ -11,12 +11,6 @@ output:
     toc_float: yes
 ---
 
-# TODO
-
-- examine use of na.omit, authors_include_bh, and contents of clinically_relevant
-- NOTE SOMEWHERE THAT N IN EACH CELL IN THE POWER ANALYSIS TABLE IS TOTAL N FOR THE STUDY, EVEN FOR THE INDEPENDENT T TESTS
-- CHECK THAT THE 'INCLUded in vahey' TAGS ARE CORRECT for the meta reanalysis moderation by inclusion.
-
 ```{r, include=FALSE}
 
 knitr::opts_chunk$set(message = FALSE,
