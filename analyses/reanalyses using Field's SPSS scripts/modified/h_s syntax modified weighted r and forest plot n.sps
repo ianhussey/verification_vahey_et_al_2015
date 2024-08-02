@@ -11,6 +11,10 @@
 * Saint Cloud State University 2011 (osma0904@stcloudstate.edu)
 
 
+* DATA: before running this script in the SPSS syntax viewer, open 'data/SPSS analyses/data_vahey_et_al_weighted_r_and_forest_plot_n.sav' in SPSS.
+
+
+
 *frequencies - if any of the studies did not provide a reliability estimate.
 freq rx ry rxy.
 

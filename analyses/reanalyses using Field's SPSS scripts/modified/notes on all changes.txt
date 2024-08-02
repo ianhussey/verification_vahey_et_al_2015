@@ -1,0 +1,45 @@
+
+
+"h_s syntax.sps" -> "h_s syntax modified.sps"
+
+- code at the start of the original script that renamed variables and dropped empty rows was removed, as it was not needed for this dataset.
+- 80% CRs were changed to 95% CRs as that's what Vahey et al. (2015) reported.
+- The script requires reliability estimates to run but Vahey et al. (2015) did not report any. Rather than modify the code to remove this requirement, I created dummy values in the dataset, setting all reliability estimates to 1.0.
+
+
+"h_s syntax modified.sps" -> "h_s syntax modified weighted r and forest plot n.sps"
+
+- These two scripts are actually identical, the new one only changes the instruction about which data file to have open on which to run the analyses.
+- This analysis speculatively explored the possibility that perhaps Vahey et al. (2015) ran their meta-analysis on the 56 individual weighted effect sizes rather than than the 15 weighted average effect sizes. 
+
+
+"Meta_Basic_r.sps" -> "Meta_Basic_r modified.sps"
+
+- code at the start of the original script that gets variables was dropped, as it is run on the loaded dataset instead.
+- removed code to launch the R script to add additional publication bias metrics, ie 
+
+*insert  file="Launch_Pub_Bias_r.sps".
+
+- borrowed code from "h_s syntax.sps" to ensure that CRs are non-negative.  
+
+Old code:
+
+compute sdrho = sqrt(vrho).
+
+New code:
+
+*if the variance in corrected correlations has a negative value, it indicates that the variance of corrected correlation is 0
+(the variance attributable to artifacts is actually grater than the observed variance).
+*do if - also, because the sqrt can not be obtained for negative values.
+
+do if (vrho >=0).
+compute sdrho = sqrt(vrho).
+end if.
+
+do if (vrho < 0).
+compute sdrho = 0.
+end if.
+
+
+
+

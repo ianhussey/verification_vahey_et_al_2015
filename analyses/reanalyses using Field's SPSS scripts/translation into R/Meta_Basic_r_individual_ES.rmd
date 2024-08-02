@@ -1,0 +1,121 @@
+---
+title: "Translation of Field's 'Meta_Basic_r.sps' script into R"
+author: "Ian Hussey"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    highlight: haddock
+    theme: flatly
+    toc: yes
+    toc_float: yes
+---
+
+Note that Field's script implements three meta analysis approaches: fixed effects, Hedges and colleagues method, and the Hunter-Schmidt method (without correlation deattenuations).
+
+I translated only the H&S method below into R from Field's SPSS code.
+
+```{r, include=FALSE}
+
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE)
+
+```
+
+# Data and dependencies
+
+```{r}
+
+library(tidyverse)
+library(janitor)
+
+data_input <- read.csv("../../../data/data_vahey_et_al_2015.csv") %>%
+  select(r_weighted_by_df, df_supplementary) %>%
+  drop_na()
+
+r <- data_input$r_weighted_by_df
+n <- data_input$df_supplementary
+
+```
+
+# As implemented in Field's script
+
+Only for Hunter-Schmidt RE model, not Hedges or fixed effects
+
+```{r}
+
+# get number of studies (k) from number of rows in r-vector
+k = length(r)
+# obtain adjusted values of r  (Overton, 1998, page 358)
+ar = r - (r*(1-r^2))/(2*(n-3))     # unnumbered equation between equations 8 and 9 in Field & Gillett (2010)
+
+# Hunter-Schmidt random-effects analysis
+rav = sum(n*ar)/sum(n)
+sr2 = sum(n*((ar-rav)^2))/sum(n)  # equation 2 in Field & Gillett (2010)
+se2 = (1-rav^2)^2/((sum(n)/k)-1)  # equation 3 in Field & Gillett (2010)
+
+# variance in population correlations 
+vrho = sr2 - se2     # equation 4 in Field & Gillett (2010)
+
+# NB Meta_Basic_r.sps does not contain this conditional to set SD to 0 if SE is <=0, but h_s_syntax.sps does. I've therefore added it here.
+if(vrho > 0){
+  sdrho = sqrt(vrho)
+} else {
+  sdrho = 0
+}
+
+cr_lower = rav - 1.96*sdrho   # equation 5 in Field & Gillett (2010)
+cr_upper = rav + 1.96*sdrho
+
+```
+
+Sample Correlation Variance = `r round_half_up(sr2, 3)`
+
+- Note that this differs from that reported by Vahey et al. (2015), i.e., .006.
+  
+Sampling Error Variance = `r round_half_up(se2, 3)`
+
+Estimated Variance in Population Correlations (i.e., sr2 - se2) = `r vrho`
+
+- Note that because this value is negative, confidence intervals cannot be calculated.
+
+meta r = `r round_half_up(rav, 2)`, 95% CR [`r round_half_up(cr_lower, 2)`, `r round_half_up(cr_upper, 2)`]
+
+# Removing Field's application of Overton's correction
+
+I realised that Field & Gillett (2010), in defining the three different methods of meta-analysis that they discussed, state that *only* the Hedges' method involves Fisher's r-to-z transformations and backtransformations (equations 7 and 8), and the use of Overton's transformation prior to r-to-z to debias the z scores (unnumbered equation in text between equations 8 and 9). However, Field's implements of these methods (i.e., "Meta_Basic_r.sps" and the above translation of it into R) incorrectly also apply the Overton transformation to the correlations used in the Hunter & Schmidt style meta analysis (i.e., without using r-to-z transformations). Below, I therefore attempt to reproduce Vahey et al.'s (2015) results by modifying Field's translated code to remove these transformations.
+
+```{r}
+
+# Hunter-Schmidt random-effects analysis
+rav_nooverton = sum(n*r)/sum(n)
+sr2_nooverton = sum(n*((r-rav_nooverton)^2))/sum(n)  # equation 2 in Field & Gillett (2010)
+se2_nooverton = (1-rav_nooverton^2)^2/((sum(n)/k)-1)  # equation 3 in Field & Gillett (2010)
+
+# variance in population correlations 
+vrho_nooverton = sr2_nooverton - se2_nooverton   # equation 4 in Field & Gillett (2010)
+
+# NB Meta_Basic_r.sps does not contain this conditional to set SD to 0 if SE is <=0, but h_s_syntax.sps does. I've therefore added it here.
+if(vrho_nooverton > 0){
+  sdrho_nooverton = sqrt(vrho_nooverton)
+} else {
+  sdrho_nooverton = 0
+}
+
+cr_lower_nooverton = rav_nooverton - 1.96*sdrho_nooverton   # equation 5 in Field & Gillett (2010)
+cr_upper_nooverton = rav_nooverton + 1.96*sdrho_nooverton
+
+```
+
+Sample Correlation Variance = `r round_half_up(sr2_nooverton, 3)`
+
+- Note that this differs from that reported by Vahey et al. (2015), i.e., .006.
+  
+Sampling Error Variance = `r round_half_up(se2_nooverton, 3)`
+
+Estimated Variance in Population Correlations (i.e., sr2 - se2) = `r vrho_nooverton`
+
+- Note that because this value is negative, confidence intervals cannot be calculated.
+
+meta r = `r round_half_up(rav_nooverton, 2)`, 95% CR [`r round_half_up(cr_lower_nooverton, 2)`, `r round_half_up(cr_upper_nooverton, 2)`]
+

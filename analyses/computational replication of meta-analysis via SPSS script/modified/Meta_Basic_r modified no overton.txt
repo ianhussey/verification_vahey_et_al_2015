@@ -1,7 +1,0 @@
-
-* calculate Q  (H & V equation 7).
-compute q = t(w)*zr&**2 - (t(w)*zr)**2/sw.
-
-* calculate Q for R-E.
-compute qe = t(wt)*zr&**2 - (t(wt)*zr)**2/swt.
-
