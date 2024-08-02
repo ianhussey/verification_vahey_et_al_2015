@@ -15,3 +15,5 @@
 In order to re-rerun the analyses, open `analyses/analyses.Rmd` in RStudio running R version 4.3.3 and click the knit button. 
 
 For greater reprodudicibility over time, you can alternatively open and run `analyses/analyses_groundhog.Rmd`, which uses the {groundhog} package to load specific versions of each dependency that are known to work. Note that you should still run this from R version 4.3.3. Newer versions of RStudio allow you to have multiple versions of R installed and select which one to use, so switching isn't that much bother. This script only differs in how it loads dependencies, and is identical from line 48 onward, except that it does not use the functions `knitr::kable()` and `kableExtra::kable_classic()` to produce more legible tables, due to compatibility issues with groundhog. 
+
+Note that some of the verification attempts for the meta-analysis itself are found in `analyses/reanalyses using Fields' SPSS scripts/modified/` and  `analyses/reanalyses using Fields' SPSS scripts/translation into R/` .
