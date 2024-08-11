@@ -37,13 +37,17 @@ packages = c("tidyverse",
              "forestploter",
              "janitor",
              "greekLetters",
-             "clubSandwich")
+             "clubSandwich",
+             "broom",
+             "janitor")
 
 groundhog.library(packages, groundhog_day, ignore.deps = "knitr")
 
 ```
 
 ```{r}
+
+options(scipen=999)
 
 dir.create("plots")
 
@@ -842,6 +846,18 @@ Laken’s (2016) describes incorrect inclusions as inclusion of effect sizes tha
 
 data_vahey %>%
   count(involves_external_criterion) 
+
+# welches t test comparing mean of r values reported that either did or didn't involve criterion effects
+t.test(formula = r_supplementary ~ involves_external_criterion,
+       data = data_vahey) |>
+  broom::tidy() |>
+  select(r_nocriterion = estimate1, 
+         r_criterion = estimate2,
+         t = statistic,
+         df = parameter,
+         p = p.value) |>
+  mutate(p = ifelse(p < .00001, "< .00001", as.character(round_half_up(p, 5)))) |>
+  mutate_if(is.numeric, round_half_up, digits = 2)
 
 ```
 

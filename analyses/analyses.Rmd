@@ -31,8 +31,12 @@ library(forestploter)
 library(janitor)
 library(greekLetters)
 library(clubSandwich)
+library(broom)
+library(janitor)
 library(knitr)
 library(kableExtra)
+
+options(scipen=999)
 
 dir.create("plots")
 
@@ -846,6 +850,20 @@ Laken’s (2016) describes incorrect inclusions as inclusion of effect sizes tha
 
 data_vahey %>%
   count(involves_external_criterion) %>%
+  kable() %>%
+  kable_classic(full_width = FALSE)
+
+# welches t test comparing mean of r values reported that either did or didn't involve criterion effects
+t.test(formula = r_supplementary ~ involves_external_criterion,
+       data = data_vahey) |>
+  broom::tidy() |>
+  select(r_nocriterion = estimate1, 
+         r_criterion = estimate2,
+         t = statistic,
+         df = parameter,
+         p = p.value) |>
+  mutate(p = ifelse(p < .00001, "< .00001", as.character(round_half_up(p, 5)))) |>
+  mutate_if(is.numeric, round_half_up, digits = 2) %>%
   kable() %>%
   kable_classic(full_width = FALSE)
 
