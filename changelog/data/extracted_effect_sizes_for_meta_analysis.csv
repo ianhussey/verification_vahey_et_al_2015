@@ -1,0 +1,335 @@
+﻿article,specific_criterion_variable_type,study_criterion_variable_types,irap_variable,criterion_variable,irap_variable_usage,problematic_analysis,ri,ni,r_inversion,checked_es_and_direction,clinically_relevant_criterion_rater_1,clinically_relevant_criterion_rater_2,clinically_relevant_criterion_either_rater,predictable_correlation_rater_1,predictable_correlation_rater_2,ri_vahey,ri_vahey_reextracted,notes
+Carpenter et al. (2012),continuous,continuous,With-cocaine-positive tt at baseline,n vouchers,correlation,FALSE,0.46,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,0.46,0.46,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-positive tt at baseline,% attendance,correlation,FALSE,0.58,17,TRUE,TRUE,FALSE,FALSE,FALSE,TRUE,,0.58,0.58,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-positive tt at baseline,% negative urine tests,correlation,FALSE,0.56,17,TRUE,TRUE,TRUE,TRUE,TRUE,,TRUE,0.56,0.56,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-negative tt at baseline,n vouchers,correlation,FALSE,0.38,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,0.38,0.38,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-negative tt at baseline,% attendance,correlation,FALSE,0.48,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,0.48,0.48,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-negative tt at baseline,% negative urine tests,correlation,FALSE,0.48,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.48,0.48,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-positive tt at baseline,n vouchers,correlation,FALSE,0.03,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,0.47,0.03,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-positive tt at baseline,% attendance,correlation,FALSE,0.19,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,0.23,0.19,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-positive tt at baseline,% negative urine tests,correlation,FALSE,0.18,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.40,0.18,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-negative tt at baseline,n vouchers,correlation,FALSE,0.47,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-negative tt at baseline,% attendance,correlation,FALSE,0.23,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-negative tt at baseline,% negative urine tests,correlation,FALSE,0.40,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-positive tt at baseline,n vouchers t2,correlation,FALSE,0.45,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-positive tt at baseline,% attendance t2,correlation,FALSE,0.37,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-positive tt at baseline,% negative urine tests t2,correlation,FALSE,0.46,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-negative tt at baseline,n vouchers t2,correlation,FALSE,0.37,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-negative tt at baseline,% attendance t2,correlation,FALSE,0.24,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,With-cocaine-negative tt at baseline,% negative urine tests t2,correlation,FALSE,0.36,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-positive tt at baseline,n vouchers t2,correlation,FALSE,0.13,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-positive tt at baseline,% attendance t2,correlation,FALSE,0.08,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-positive tt at baseline,% negative urine tests t2,correlation,FALSE,0.13,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-negative tt at baseline,n vouchers t2,correlation,FALSE,0.01,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-negative tt at baseline,% attendance t2,correlation,FALSE,-0.18,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,no-cocaine-negative tt at baseline,% negative urine tests t2,correlation,FALSE,0.01,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,binary,With-cocaine-positive tt at baseline,entering phase 2,correlation,FALSE,0.42,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,point biserial correlation
+Carpenter et al. (2012),continuous,binary,With-cocaine-negative tt at baseline,entering phase 2,correlation,FALSE,0.37,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,point biserial correlation
+Carpenter et al. (2012),continuous,binary,no-cocaine-positive tt at baseline,entering phase 2,correlation,FALSE,0.13,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,point biserial correlation
+Carpenter et al. (2012),continuous,binary,no-cocaine-negative tt at baseline,entering phase 2,correlation,FALSE,0.01,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,point biserial correlation
+Carpenter et al. (2012),continuous,continuous,overall D,n vouchers,correlation,FALSE,0.43,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,overall D,% attendance,correlation,FALSE,0.47,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,overall D,% negative urine tests,correlation,FALSE,0.52,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,binary,overall D,entering phase 2,correlation,FALSE,0.29,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,point biserial correlation
+Carpenter et al. (2012),continuous,continuous,overall D,n vouchers t2,correlation,FALSE,0.30,17,TRUE,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,,,
+Carpenter et al. (2012),continuous,continuous,overall D,% attendance t2,correlation,FALSE,0.16,17,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Carpenter et al. (2012),continuous,continuous,overall D,% negative urine tests t2,correlation,FALSE,0.30,17,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Dawson et al. (2009),group,group,Child-sexual tt,controls vs paedophilic sex-offenders,correlation,FALSE,0.41,32,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.41,0.41,
+Dawson et al. (2009),,,Child-sexual trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,16,FALSE,TRUE,,,FALSE,,,0.56,,Positive one-group effect among controls. ES not reported in paper - Did vahey get additional info from authors?
+Dawson et al. (2009),,,Child-innocent trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,16,FALSE,TRUE,,,FALSE,,,0.42,,Positive one-group effect among controls. ES not reported in paper - Did vahey get additional info from authors?
+Dawson et al. (2009),,,Adult-sexual trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,16,FALSE,TRUE,,,FALSE,,,0.58,,Positive one-group effect among controls. ES not reported in paper - Did vahey get additional info from authors?
+Dawson et al. (2009),,,Adult-innocent trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,16,FALSE,TRUE,,,FALSE,,,0.33,,Positive one-group effect among controls. ES not reported in paper - Did vahey get additional info from authors?
+Dawson et al. (2009),continouous,continouous,Adult-sexual trial-type DIRAP,approx no. previous offences,correlation,FALSE,0.08,16,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Adult-innocent trial-type DIRAP,approx no. previous offences,correlation,FALSE,0.09,16,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Child-sexual trial-type DIRAP,approx no. previous offences,correlation,FALSE,0.21,16,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Child-innocent trial-type DIRAP,approx no. previous offences,correlation,FALSE,0.18,16,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,overall D,approx no. previous offences,correlation,FALSE,0.21,16,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Adult-sexual trial-type DIRAP,approx weeks in treatment,correlation,FALSE,0.26,16,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Adult-innocent trial-type DIRAP,approx weeks in treatment,correlation,FALSE,0.04,16,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Child-sexual trial-type DIRAP,approx weeks in treatment,correlation,FALSE,0.17,16,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,Child-innocent trial-type DIRAP,approx weeks in treatment,correlation,FALSE,0.21,16,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,values obtained from authors
+Dawson et al. (2009),continouous,continouous,overall D,approx weeks in treatment,correlation,FALSE,0.23,16,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,values obtained from authors
+Hooper et al. (2010),group,group,Compound DIRAP for all four IRAP trial-types about experiential avoidance,mindfulness group,DV,FALSE,,24,FALSE,TRUE,,,FALSE,,,0.44,,Vahey treats etap2 as if it is eta2 and converts to r; however these are not equal for such an interaction effect
+Hooper et al. (2010),continuous,continuous,overall d pre,aaq,correlation,FALSE,0.18,24,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Hooper et al. (2010),continuous,continuous,overall d post,aaq,correlation,FALSE,-0.49,24,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Hussey & Barnes-Holmes (2012),group,,Compound DIRAP for all four IRAP trial-types about depressive thinking,Within-between intereaction - controls versus group with mild depression from baseline across an intervention designed to induce sad thinking,DV,FALSE,,30,FALSE,FALSE,,,FALSE,,,0.51,,NB Vahey converts to r as if it is eta2 rather than partial eta2. The two are not equivalent here - attempting to access original data to correct. Within-between intereaction - controls versus group with mild depression from baseline across an intervention designed to induce sad thinking. No need to check as it will be excluded on the basis of IRAP as DV
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good Before Exposure,dass d,correlation,FALSE,0.16,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad Before Exposure,dass d,correlation,FALSE,0.15,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good Before Exposure uninverted,dass d,correlation,FALSE,-0.03,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad Before Exposure uninverted,dass d,correlation,FALSE,-0.08,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d pre,dass d,correlation,FALSE,0.05,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good After Exposure,dass d,correlation,FALSE,-0.07,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad After Exposure,dass d,correlation,FALSE,0.04,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good After Exposure uninverted,dass d,correlation,FALSE,0.15,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad After Exposure uninverted,dass d,correlation,FALSE,0.39,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d post,dass d,correlation,FALSE,0.16,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good prepost change,dass d,correlation,FALSE,-0.19,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad change,dass d,correlation,FALSE,-0.10,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good uninverted change,dass d,correlation,FALSE,0.17,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad uninverted change,dass d,correlation,FALSE,0.41,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d prepost change,dass d,correlation,FALSE,0.11,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good Before Exposure,dass a,correlation,FALSE,0.29,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad Before Exposure,dass a,correlation,FALSE,0.18,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good Before Exposure uninverted,dass a,correlation,FALSE,-0.06,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad Before Exposure uninverted,dass a,correlation,FALSE,0.16,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d pre,dass a,correlation,FALSE,0.16,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good After Exposure,dass a,correlation,FALSE,-0.05,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad After Exposure,dass a,correlation,FALSE,0.08,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good After Exposure uninverted,dass a,correlation,FALSE,-0.07,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad After Exposure uninverted,dass a,correlation,FALSE,0.25,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d post,dass a,correlation,FALSE,0.07,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good prepost change,dass a,correlation,FALSE,-0.30,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad change,dass a,correlation,FALSE,-0.08,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good uninverted change,dass a,correlation,FALSE,0.00,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad uninverted change,dass a,correlation,FALSE,0.05,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d prepost change,dass a,correlation,FALSE,-0.14,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good Before Exposure,dass s,correlation,FALSE,0.10,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad Before Exposure,dass s,correlation,FALSE,-0.04,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good Before Exposure uninverted,dass s,correlation,FALSE,-0.11,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad Before Exposure uninverted,dass s,correlation,FALSE,0.02,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d pre,dass s,correlation,FALSE,-0.02,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good After Exposure,dass s,correlation,FALSE,0.20,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad After Exposure,dass s,correlation,FALSE,0.02,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good After Exposure uninverted,dass s,correlation,FALSE,-0.06,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad After Exposure uninverted,dass s,correlation,FALSE,0.19,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d post,dass s,correlation,FALSE,0.11,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good prepost change,dass s,correlation,FALSE,0.10,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad change,dass s,correlation,FALSE,0.05,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good uninverted change,dass s,correlation,FALSE,0.07,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad uninverted change,dass s,correlation,FALSE,0.14,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d prepost change,dass s,correlation,FALSE,0.14,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good Before Exposure,aaq,correlation,FALSE,-0.34,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad Before Exposure,aaq,correlation,FALSE,-0.20,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good Before Exposure uninverted,aaq,correlation,FALSE,-0.05,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad Before Exposure uninverted,aaq,correlation,FALSE,-0.08,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d pre,aaq,correlation,FALSE,-0.20,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good After Exposure,aaq,correlation,FALSE,0.14,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad After Exposure,aaq,correlation,FALSE,0.03,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good After Exposure uninverted,aaq,correlation,FALSE,0.06,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad After Exposure uninverted,aaq,correlation,FALSE,-0.32,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d post,aaq,correlation,FALSE,-0.02,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Good prepost change,aaq,correlation,FALSE,0.42,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Good - Feel Bad change,aaq,correlation,FALSE,0.23,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Good uninverted change,aaq,correlation,FALSE,0.11,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,Life Bad - Feel Bad uninverted change,aaq,correlation,FALSE,-0.19,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Hussey & Barnes-Holmes (2012),continouous,continouous,overall d prepost change,aaq,correlation,FALSE,0.24,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,raw data obtained from authors
+Kishita et al. (2014),,,Raw latency IRAP effect across all four IRAP trial-types evaluating calmness versus anxiety,,IRAP effect significance from zero test,TRUE,,24,FALSE,FALSE,,,FALSE,,,0.70,,Positive omnibus raw latency IRAP effect across both undergraduate groups at baseline. No need to check as it'll be removed as a problematic analysis
+Kosnes et al. (2013),group,group,expect positive tt,depression group,DV,FALSE,0.37,71,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,0.37,0.37,"No need to check, will be exluded from meta on basis of IRAP as DV"
+Kosnes et al. (2013),group,group,expect negative tt,depression group,DV,FALSE,0.35,71,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,"No need to check, will be exluded from meta on basis of IRAP as DV"
+Nicholson & Barnes-Holmes (2012a),,,Compound DIRAP from the two IRAP trial-types with pictures of spiders,,IRAP effect significance from zero test,TRUE,,30,FALSE,FALSE,,,FALSE,,,0.66,,"Positive one-group effect for those scoring high on the FSQ. No need to check, will be exluded from meta on basis of IRAP as DV"
+Nicholson & Barnes-Holmes (2012a),group,mixed,Compound DIRAP from the two IRAP trial-types with pictures of spiders,high vs low spider fear group,DV,FALSE,0.44,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012a),group,mixed,Compound DIRAP from the two IRAP trial-types with pictures of pleasant images,high vs low spider fear group,DV,FALSE,0.13,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012a),continuous,mixed,Compound DIRAP from the two IRAP trial-types with pictures of spiders,BAT,DV,FALSE,0.41,30,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.41,0.41,
+Nicholson & Barnes-Holmes (2012a),continuous,mixed,Compound DIRAP from the two IRAP trial-types with pictures of pleasant images,BAT,DV,FALSE,0.04,30,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012a),continuous,mixed,Compound DIRAP from the two IRAP trial-types with pictures of spiders,FSQ,DV,FALSE,0.47,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.47,0.47,
+Nicholson & Barnes-Holmes (2012a),continuous,mixed,Compound DIRAP from the two IRAP trial-types with pictures of pleasant images,FSQ,DV,FALSE,0.04,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),,,Disgusting-pictures-bad trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,26,FALSE,FALSE,,,FALSE,,,0.66,,"Positive one-group effect across general student population sampled.No need to check, will be exluded from meta on basis of IRAP as DV"
+Nicholson & Barnes-Holmes (2012b),,,Disgusting-picture-distressing trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,26,FALSE,FALSE,,,FALSE,,,0.45,,"Positive one-group effect across general student population sampled.No need to check, will be exluded from meta on basis of IRAP as DV"
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,BAT,correlation,FALSE,-0.09,26,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,"this paper examined mean IRAP scores (IRAP as DV), used IRAP scores to predict scale scores in regressions (IRAP as IV), and also reported zero order correlations. We report the latter here, as they are agnostic to prediction direction and not confounded by the partialling out of other variables. "
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,DS-R,correlation,FALSE,0.05,26,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,OCI-R,correlation,FALSE,0.40,26,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,depression,correlation,FALSE,0.41,26,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,anxiety,correlation,FALSE,0.23,26,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,stress,correlation,FALSE,0.10,26,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,dass total,correlation,FALSE,,26,FALSE,TRUE,,,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,obsessing,correlation,FALSE,,26,FALSE,TRUE,,,FALSE,,,,,"r = 0.494 was not included in the results, as results only reported correlations between the IRAP and some of the subscales of the OCI-R. Elsewhere, where all subscales are reported, we exclude the correlation with the total score and include only the subscales. Here we must do the opposite."
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DP-IRAP overall score,washing,correlation,FALSE,,26,FALSE,TRUE,,,FALSE,,,,,"r = 0.234 was not included in the results, as results only reported correlations between the IRAP and some of the subscales of the OCI-R. Elsewhere, where all subscales are reported, we exclude the correlation with the total score and include only the subscales. Here we must do the opposite."
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,BAT,correlation,FALSE,0.47,26,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.47,0.47,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,DS-R,correlation,FALSE,0.24,26,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,OCI-R,correlation,FALSE,0.41,26,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,depression,correlation,FALSE,0.45,26,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,anxiety,correlation,FALSE,0.27,26,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,stress,correlation,FALSE,0.25,26,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,dass total,correlation,FALSE,,26,FALSE,TRUE,,,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,obsessing,correlation,FALSE,,26,FALSE,TRUE,,,FALSE,,,,,"r = 0.32 was not included in the results, as results only reported correlations between the IRAP and some of the subscales of the OCI-R. Elsewhere, where all subscales are reported, we exclude the correlation with the total score and include only the subscales. Here we must do the opposite."
+Nicholson & Barnes-Holmes (2012b),continuous,continuous,Compound DS-IRAP overall score,washing,correlation,FALSE,,26,FALSE,TRUE,,,FALSE,,,,,"r = 0.39 was not included in the results, as results only reported correlations between the IRAP and some of the subscales of the OCI-R. Elsewhere, where all subscales are reported, we exclude the correlation with the total score and include only the subscales. Here we must do the opposite."
+"Nicholson, Dempsey et al. (2014)",,,Compound DIRAP from the two IRAP trial-types with pictures stereotypically related to contamination,,IRAP effect significance from zero test,TRUE,,29,FALSE,FALSE,,,FALSE,,,0.84,,"Positive one-group effect in the high OCD group. No need to check, will be exluded from meta on basis of IRAP as DV"
+"Nicholson, Dempsey et al. (2014)",,,Compound DIRAP from the two IRAP trial-types with pictures stereotypically related to cleanness,,IRAP effect significance from zero test,TRUE,,29,FALSE,FALSE,,,FALSE,,,0.71,,"Positive one-group effect in the high OCD group.No need to check, will be exluded from meta on basis of IRAP as DV"
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,BAT,correlation,FALSE,0.43,29,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.43,0.43,"this paper used median splits to predict IRAP scores (IRAP as DV), IRAP scores to predict scale scores in regressions (IRAP as IV), and also reported zero order correlations. We report the latter here, as they are agnostic to prediction direction and not confounded by the partialling out of other variables. "
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,padua,correlation,FALSE,,29,FALSE,TRUE,,,FALSE,,,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,padua - contamination washing,correlation,FALSE,0.44,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.44,0.44,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,padua - dressing grooming,correlation,FALSE,0.28,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,padua - checking,correlation,FALSE,0.14,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,padual - thoughts of harm to self/others,correlation,FALSE,0.27,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,padua - impulses to harm self/others,correlation,FALSE,0.38,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,obsessive beliefs questionnaire,correlation,FALSE,,29,FALSE,TRUE,,,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,obsessive beliefs questionnaire - responsibility/threat,correlation,FALSE,0.23,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.22,0.23,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,obsessive beliefs questionnaire - perfectionism/uncertainty,correlation,FALSE,0.21,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,obsessive beliefs questionnaire - importance/control,correlation,FALSE,0.12,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,disgust sensitivity revised,correlation,FALSE,0.42,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,aaq,correlation,FALSE,0.22,29,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,dirty compound tts,anxiety,correlation,FALSE,0.31,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,BAT,correlation,FALSE,0.09,29,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,padua,correlation,FALSE,,29,FALSE,TRUE,,,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,padua - contamination washing,correlation,FALSE,0.28,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,padua - dressing grooming,correlation,FALSE,0.08,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,padua - checking,correlation,FALSE,0.20,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,padual - thoughts of harm to self/others,correlation,FALSE,0.00,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,padua - impulses to harm self/others,correlation,FALSE,-0.07,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,obsessive beliefs questionnaire,correlation,FALSE,,29,FALSE,TRUE,,,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,obsessive beliefs questionnaire - responsibility/threat,correlation,FALSE,0.06,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,obsessive beliefs questionnaire - perfectionism/uncertainty,correlation,FALSE,-0.04,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,obsessive beliefs questionnaire - importance/control,correlation,FALSE,-0.04,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,disgust sensitivity revised,correlation,FALSE,0.21,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,aaq,correlation,FALSE,0.06,29,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+"Nicholson, Dempsey et al. (2014)",continuous,continuous,clean compound tts,anxiety,correlation,FALSE,0.19,29,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",,,Disgusting-pictures-negative trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,27,FALSE,FALSE,,,FALSE,,,0.66,,"Positive one-group effect.No need to check, will be exluded from meta on basis of IRAP as DV"
+"Nicholson, McCourt et al. (2013)",,,Disgusting-pictures-positive trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,27,FALSE,FALSE,,,FALSE,,,0.72,,"Positive one-group effect across the general student population sampled.No need to check, will be exluded from meta on basis of IRAP as DV"
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,obsessive beliefs questionnaire,correlation,FALSE,,27,FALSE,TRUE,,,FALSE,,,0.48,0.48,only correlations with one trial type were included in the manuscript; it notes that the other correlation tables are available from the journal website but this doesn't seem to be the case. Ive emailed the author asking for a copy of these results.
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,obsessive beliefs questionnaire - responsibility/threat,correlation,FALSE,0.56,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,obsessive beliefs questionnaire - perfectionism/uncertainty,correlation,FALSE,0.43,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,obsessive beliefs questionnaire - importance/control,correlation,FALSE,0.18,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,OCI-R,correlation,FALSE,0.17,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,padua,correlation,FALSE,,27,FALSE,TRUE,,,FALSE,,,0.50,0.34,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,padua - contamination washing,correlation,FALSE,0.03,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,padua - dressing grooming,correlation,FALSE,-0.01,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,padua - checking,correlation,FALSE,0.50,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,padua - thoughts of harm to self/others,correlation,FALSE,0.40,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,padua - impulses to harm self/others,correlation,FALSE,0.25,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+"Nicholson, McCourt et al. (2013)",continuous,continuous,Disgust negative trial type,stai,correlation,FALSE,0.16,27,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Parling et al. (2012),,,Bad-me-fat trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,28,FALSE,FALSE,,,FALSE,,,0.25,,Positive one-group effect among those diagnosed with anorexia. No need to check as it will be excluded on the basis of this
+Parling et al. (2012),,,Good-me-thin trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,28,FALSE,FALSE,,,FALSE,,,0.61,,Positive one-group effect among those diagnosed with anorexia. No need to check as it will be excluded on the basis of this
+Parling et al. (2012),,,I-dont-want-to-be-fat trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,30,FALSE,FALSE,,,FALSE,,,0.62,,Positive one-group effect among those diagnosed with anorexia. No need to check as it will be excluded on the basis of this
+Parling et al. (2012),,,I-want-to-be-thin trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,30,FALSE,FALSE,,,FALSE,,,0.58,,Positive one-group effect among those diagnosed with anorexia. No need to check as it will be excluded on the basis of this
+Parling et al. (2012),,,Its-ok-for-me-to-be-thin trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,27,FALSE,FALSE,,,FALSE,,,0.42,,Positive one-group effect among those diagnosed with anorexia. No need to check as it will be excluded on the basis of this
+Parling et al. (2012),continuous,,Bad-me-fat trial-type DIRAP,Body Shape Questionnaire,correlation,FALSE,,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.14,,"NB these and many other correlations were run but reported only as ""no other correlations were signfiicant"". Complete reporting of this paper requires data from authors; I've emailed them."
+Parling et al. (2012),continuous,,Good-me-thin trial-type DIRAP,Body Shape Questionnaire,correlation,FALSE,,30,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.35,,"NB these and many other correlations were run but reported only as ""no other correlations were signfiicant"". Complete reporting of this paper requires data from authors; I've emailed them."
+Parling et al. (2012),group ,group,"""Bad me fat"" self-IRAP trial type",clinical anorexia group,DV,FALSE,0.43,28,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,0.43,0.43,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Good me fat"" self-IRAP trial type",clinical anorexia group,DV,FALSE,0.47,28,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Good me thin"" self-IRAP trial type",clinical anorexia group,DV,FALSE,0.24,28,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,0.25,0.24,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Bad me thin"" self-IRAP trial type",clinical anorexia group,DV,FALSE,0.11,28,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Bad others fat"" others-IRAP trial type",clinical anorexia group,DV,FALSE,0.05,25,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Good others fat"" others-IRAP trial type",clinical anorexia group,DV,FALSE,0.30,25,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Good others thin"" others-IRAP trial type",clinical anorexia group,DV,FALSE,0.05,25,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""Bad others thin"" others-IRAP trial type",clinical anorexia group,DV,FALSE,0.31,25,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,FALSE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I dont want to be fat"" Thin-IRAP trial type",clinical anorexia group,DV,FALSE,0.37,30,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I want to be fat"" Thin-IRAP trial type",clinical anorexia group,DV,FALSE,0.06,30,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I want to be thin"" Thin-IRAP trial type",clinical anorexia group,DV,FALSE,0.27,30,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I dont want to be thin"" Thin-IRAP trial type",clinical anorexia group,DV,FALSE,0.02,30,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I must not be fat"" Fat-IRAP trial type",clinical anorexia group,DV,FALSE,0.12,27,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I can be fat"" Fat-IRAP trial type",clinical anorexia group,DV,FALSE,0.20,27,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I can be thin"" fat-IRAP trial type",clinical anorexia group,DV,FALSE,0.08,27,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+Parling et al. (2012),group,group,"""I must not be thin"" Fat-IRAP trial type",clinical anorexia group,DV,FALSE,0.34,27,FALSE,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,,,No need to check as it will be excluded on the basis of IRAP as DV
+"Remue, et al. (2013)",group,group,Compound DIRAP from the four IRAP trial-types evaluating idealized self,,IRAP effect significance from zero test,TRUE,,29,FALSE,TRUE,,,FALSE,,,0.50,0.37,Positive one-group effect across those scoring higher on Beck Depression Inventory (BDI).
+"Remue, et al. (2013)",group,group,Compound DIRAP from the four IRAP trial-types evaluating actual self,,IRAP effect significance from zero test,TRUE,,27,FALSE,TRUE,,,FALSE,,,0.37,0.50,Positive one-group effect across those scoring lower on BDI.
+"Remue, et al. (2013)",group,group,Compound DIRAPs from the IRAP trial-types evaluating idealized- versus actual-self,,IRAP effect significance from zero test,TRUE,,29,FALSE,TRUE,,,FALSE,,,0.58,0.39,Negative within-group effect among those scoring higher on BDI.
+"Remue, et al. (2013)",group,group,Compound DIRAPs from the IRAP trial-types evaluating idealized- versus actual-self,,IRAP effect significance from zero test,TRUE,,27,FALSE,TRUE,,,FALSE,,,0.38,0.23,Positive within-group effect among those scoring higher on BDI.
+Timko et al. (2010; Study 1),group,,Compound DIRAP for all four IRAP trial-types about personal body image,Between groups comparison - not dieting versus those dieting,DV,FALSE,,50,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.45,0.42,"Between groups comparison - not dieting versus those dieting. NB there are two dieting groups, one to lose weight and one to maintain. Vahey does not note which they are comparing, or why one comparison was excluded."
+Timko et al. (2010; Study 1),continuous,continuous,overall D-IRAP score,SATAQ total,correlation,FALSE,,50,TRUE,TRUE,,,FALSE,,,0.29,0.23,
+Timko et al. (2010; Study 1),continuous,continuous,overall D-IRAP score,DASS-total,correlation,FALSE,,50,,TRUE,,,FALSE,,,0.48,,NB correlation with DASS total is not actually reported in the manuscript - perhaps Vahey asked the authors for their data? But this goes beyond stating that some hypotheses were potentially a priori predictable to imposing new ones the authors didn't ask.
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,BMI,correlation,FALSE,-0.09,50,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,BI-AAQ,correlation,FALSE,0.15,50,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,SATAQ-Info,correlation,FALSE,0.15,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,SATAQ-Pressure,correlation,FALSE,0.16,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,SATAQ-General internalization,correlation,FALSE,0.24,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,SATAQ-Athletic ideal internalization,correlation,FALSE,0.29,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,DASS-Stress,correlation,FALSE,0.19,50,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,DASS-Anxiety,correlation,FALSE,0.20,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,DASS-Depression,correlation,FALSE,0.29,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am positive,BSQ,correlation,FALSE,0.32,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,BMI,correlation,FALSE,-0.03,50,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,BI-AAQ,correlation,FALSE,0.16,50,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,SATAQ-Info,correlation,FALSE,0.11,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,SATAQ-Pressure,correlation,FALSE,0.15,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,SATAQ-General internalization,correlation,FALSE,0.16,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,SATAQ-Athletic ideal internalization,correlation,FALSE,-0.01,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,DASS-Stress,correlation,FALSE,-0.15,50,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,DASS-Anxiety,correlation,FALSE,-0.17,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,DASS-Depression,correlation,FALSE,-0.01,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am negative,BSQ,correlation,FALSE,0.15,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,BMI,correlation,FALSE,0.20,50,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,BI-AAQ,correlation,FALSE,0.26,50,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,SATAQ-Info,correlation,FALSE,0.02,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,SATAQ-Pressure,correlation,FALSE,0.23,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,SATAQ-General internalization,correlation,FALSE,0.10,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,SATAQ-Athletic ideal internalization,correlation,FALSE,0.05,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,DASS-Stress,correlation,FALSE,0.11,50,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,DASS-Anxiety,correlation,FALSE,-0.21,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,DASS-Depression,correlation,FALSE,0.16,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not positive,BSQ,correlation,FALSE,0.43,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,BMI,correlation,FALSE,0.08,50,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,BI-AAQ,correlation,FALSE,0.19,50,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,SATAQ-Info,correlation,FALSE,-0.10,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,SATAQ-Pressure,correlation,FALSE,0.14,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,SATAQ-General internalization,correlation,FALSE,0.10,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,SATAQ-Athletic ideal internalization,correlation,FALSE,-0.02,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,DASS-Stress,correlation,FALSE,0.04,50,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,DASS-Anxiety,correlation,FALSE,0.17,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,DASS-Depression,correlation,FALSE,0.24,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,I am not negative,BSQ,correlation,FALSE,0.24,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,BMI,correlation,FALSE,0.14,50,TRUE,TRUE,FALSE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,BI-AAQ,correlation,FALSE,0.32,50,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,SATAQ-Info,correlation,FALSE,0.09,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,SATAQ-Pressure,correlation,FALSE,0.30,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,SATAQ-General internalization,correlation,FALSE,0.25,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,SATAQ-Athletic ideal internalization,correlation,FALSE,0.12,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,DASS-Stress,correlation,FALSE,0.10,50,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,DASS-Anxiety,correlation,FALSE,0.17,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,DASS-Depression,correlation,FALSE,0.29,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 1),continuous,continuous,overall d,BSQ,correlation,FALSE,0.48,50,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,QLI total score,correlation,FALSE,0.13,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,QLI-Health and functioning,correlation,FALSE,0.14,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,QLI-Social and economic,correlation,FALSE,0.03,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,QLI-Psychological/Spiritual,correlation,FALSE,0.13,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,QLI-Family,correlation,FALSE,0.07,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,BSI-Anxiety,correlation,FALSE,0.06,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,BSI-Depression,correlation,FALSE,0.03,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,BSI-Interpersonal sensitivity,correlation,FALSE,0.14,93,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,overall d,BSI-Global Symptom Severity,correlation,FALSE,0.07,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,QLI total score,correlation,FALSE,0.26,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,QLI-Health and functioning,correlation,FALSE,0.28,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,QLI-Social and economic,correlation,FALSE,0.12,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,QLI-Psychological/Spiritual,correlation,FALSE,0.29,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,QLI-Family,correlation,FALSE,0.12,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,BSI-Anxiety,correlation,FALSE,0.12,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,BSI-Depression,correlation,FALSE,0.22,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,BSI-Interpersonal sensitivity,correlation,FALSE,0.25,93,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am positive,BSI-Global Symptom Severity,correlation,FALSE,0.21,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,QLI total score,correlation,FALSE,-0.01,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,QLI-Health and functioning,correlation,FALSE,0.03,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,QLI-Social and economic,correlation,FALSE,-0.06,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,QLI-Psychological/Spiritual,correlation,FALSE,0.01,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,QLI-Family,correlation,FALSE,-0.09,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,BSI-Anxiety,correlation,FALSE,-0.04,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,BSI-Depression,correlation,FALSE,0.08,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,BSI-Interpersonal sensitivity,correlation,FALSE,0.17,93,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am negative,BSI-Global Symptom Severity,correlation,FALSE,0.06,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,QLI total score,correlation,FALSE,0.06,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,QLI-Health and functioning,correlation,FALSE,0.05,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,QLI-Social and economic,correlation,FALSE,0.05,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,QLI-Psychological/Spiritual,correlation,FALSE,0.04,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,QLI-Family,correlation,FALSE,0.07,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,BSI-Anxiety,correlation,FALSE,-0.02,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,BSI-Depression,correlation,FALSE,-0.14,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,BSI-Interpersonal sensitivity,correlation,FALSE,-0.09,93,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not positive,BSI-Global Symptom Severity,correlation,FALSE,-0.04,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,QLI total score,correlation,FALSE,-0.01,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,"for this and all other studies, correlations with full scales are exluded when their subscales are reported"
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,QLI-Health and functioning,correlation,FALSE,-0.01,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,QLI-Social and economic,correlation,FALSE,-0.04,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,QLI-Psychological/Spiritual,correlation,FALSE,-0.02,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,QLI-Family,correlation,FALSE,0.07,93,FALSE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,BSI-Anxiety,correlation,FALSE,0.08,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,BSI-Depression,correlation,FALSE,-0.08,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,BSI-Interpersonal sensitivity,correlation,FALSE,0.04,93,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,
+Timko et al. (2010; Study 2),continuous,continuous,I am not negative,BSI-Global Symptom Severity,correlation,FALSE,-0.05,93,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,,,
+Vahey et al. (2009),,,Compound DIRAP from the IRAP trial-types involving positive self-descriptors,,IRAP effect significance from zero test,TRUE,,24,FALSE,FALSE,,,FALSE,,,0.82,,Positive one-group effect across the undergraduates. No need to check as it will be excluded on this basis.
+Vahey et al. (2009),,,Compound DIRAP from the IRAP trial-types involving negative self-descriptors,,IRAP effect significance from zero test,TRUE,,24,FALSE,FALSE,,,FALSE,,,0.58,,Positive one-group effect across the undergraduates. No need to check as it will be excluded on this basis.
+Vahey et al. (2009),group,group,compound self positive and self negative tt,main block vs open air prisoners,DV,FALSE,-0.62,37,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,"inverted because direction was contra post hoc precictions, in the sense that vahey employed them"
+Vahey et al. (2009),group,group,compound self positive and self negative tt,undergraduate vs main block prisoners,DV,FALSE,0.46,30,FALSE,TRUE,FALSE,FALSE,FALSE,,,0.44,0.46,
+Vahey et al. (2009),group,group,compound self positive and self negative tt,undergraduate vs open air prisoners,DV,FALSE,-0.04,19,TRUE,TRUE,FALSE,FALSE,FALSE,,,,,"inverted because direction was contra post hoc precictions, in the sense that vahey employed them"
+Vahey et al. (2010),,,Smokers-popular trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,5,FALSE,FALSE,,,FALSE,,,0.89,,Positive one-group effect among adolescent smokers (aged 11-19 years of age). No need to check as it will be excluded on this basis.
+Vahey et al. (2010),,,Non-smokers-unpopular trial-type DIRAP,,IRAP effect significance from zero test,TRUE,,8,FALSE,FALSE,,,FALSE,,,0.55,,Positive one-group effect among adolescent smokers (aged 11-19 years of age). No need to check as it will be excluded on this basis.
+Vahey et al. (2010),group,group,smokers-positive tt,smokers vs non smokers,DV,FALSE,0.21,13,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.21,0.21,
+Vahey et al. (2010),group,group,smokers-negative tt,smokers vs non smokers,DV,FALSE,0.26,13,FALSE,TRUE,TRUE,TRUE,TRUE,TRUE,TRUE,0.25,0.26,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,
+,,,,,,,,,,,,,,,,,,

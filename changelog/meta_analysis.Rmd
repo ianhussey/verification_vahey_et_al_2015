@@ -1,0 +1,855 @@
+---
+title: "Meta analyses of IRAP-criterion effect association"
+author: "Ian Hussey"
+date: "`r format(Sys.time(), '%d %B, %Y')`"
+output:
+  html_document:
+    code_folding: hide
+    highlight: haddock
+    theme: flatly
+    toc: yes
+    toc_float: yes
+---
+
+```{r, include=FALSE}
+
+knitr::opts_chunk$set(message = FALSE,
+                      warning = FALSE)
+
+```
+
+```{r}
+
+# dependencies
+library(tidyverse)
+library(timesavers)  # library(devtools); install_github("ianhussey/timesavers")
+library(effects)
+library(metafor)
+library(pwr)
+library(knitr)
+library(kableExtra)
+library(brmstools) # library(devtools); install_github("mvuorre/brmstools")
+library(patchwork)
+library(irr)
+
+
+# notation off
+options(scipen = 999)
+
+# get data and reshape
+data_for_meta           <- read.csv("data/extracted_effect_sizes_for_meta_analysis.csv")
+systematic_review_data  <- read.csv("../systematic review/data/5 review/systematic review of IRAP research.csv")
+
+# function for custom forest plot
+forest_plot <- function(data_for_meta,
+                        meta_results) {
+  
+  require(tidyverse)
+  require(brmstools)
+  require(patchwork)
+  
+  meta_results_df <- data.frame(article   = "Meta analysis",
+                                yi        = as.numeric(meta_results$estimate[1]),
+                                se        = as.numeric(meta_results$estimate[2]),
+                                yi_ci_lwr = as.numeric(meta_results$estimate[3]),
+                                yi_ci_upr = as.numeric(meta_results$estimate[4])) %>%
+    mutate(vi = se^2)
+  
+  # credibility intervals
+  CR_lwr <- meta_results$estimate[5]
+  
+  CR_upr <- meta_results$estimate[6]
+  
+  # plot
+  combined_plotting_data <- data_for_meta %>%
+    ungroup() %>%
+    mutate(se = sqrt(vi), 
+           yi_ci_lwr = yi - se*1.96,
+           yi_ci_upr = yi + se*1.96) %>%
+    dplyr::select(article, yi, vi, se, yi_ci_lwr, yi_ci_upr) %>%
+    arrange(article) %>%
+    bind_rows(meta_results_df) %>%
+    rownames_to_column(var = "rowname") %>%
+    mutate(article    = fct_reorder(article, desc(as.numeric(as.character(rowname))))) %>%
+    mutate(size       = 6 - (se - min(se)) / (max(se) - min(se)) * 5,  # set point size to proportionate range from 1-6
+           yi_cr_lwr  = ifelse(as.character(article) == "Meta analysis", as.numeric(CR_lwr), NA),
+           yi_cr_upr  = ifelse(as.character(article) == "Meta analysis", as.numeric(CR_upr), NA),
+           results_string   = paste0(format(round(yi, 2), nsmall = 2), " [",
+                                     format(round(yi_ci_lwr, 2), nsmall = 2), ", ",
+                                     format(round(yi_ci_upr, 2), nsmall = 2), "]"))
+  
+  p1 <- 
+    ggplot(combined_plotting_data, aes(article, yi)) +
+    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+    geom_linerange(aes(ymin = yi_ci_lwr, ymax = yi_ci_upr)) +
+    geom_linerange(aes(ymin = yi_cr_lwr, ymax = yi_cr_upr), linetype = "dotted") +
+    geom_point(shape = "square", size = combined_plotting_data$size) +
+    coord_flip() +
+    brmstools::theme_forest() +
+    theme(axis.text.y = element_text(hjust = 0))
+  
+  p2 <- 
+    ggplot(combined_plotting_data, aes(article, 1)) +
+    geom_text(aes_string(label = "results_string"),
+              hjust = "inward", 
+              size = 3) +
+    coord_flip() +
+    theme_void() + 
+    theme(panel.grid = element_blank(), panel.border = element_blank())
+  
+  # combine plots
+  plot <- p1 + p2 + plot_layout(nrow = 1, widths = c(3, 1))
+  
+  return(plot)
+}
+
+# plot for multivariate data
+forest_plot_mv <- function(data_for_meta,
+                           meta_results) {
+  
+  require(tidyverse)
+  require(brmstools)
+  require(patchwork)
+  
+  meta_results_df <- data.frame(article   = "Meta analysis",
+                                variables = "",
+                                yi        = as.numeric(meta_results$estimate[1]),
+                                se        = as.numeric(meta_results$estimate[2]),
+                                yi_ci_lwr = as.numeric(meta_results$estimate[3]),
+                                yi_ci_upr = as.numeric(meta_results$estimate[4])) %>%
+    mutate(vi = se^2,
+           label = article)
+  
+  # credibility intervals
+  CR_lwr <- meta_results$estimate[5]
+  
+  CR_upr <- meta_results$estimate[6]
+  
+  # plot
+  combined_plotting_data <- data_for_meta %>%
+    ungroup() %>%
+    mutate(se = sqrt(vi), 
+           yi_ci_lwr = yi - se*1.96,
+           yi_ci_upr = yi + se*1.96) %>%
+    dplyr::select(article, variables, yi, vi, se, yi_ci_lwr, yi_ci_upr) %>%
+    mutate(label = paste(article, variables, sep = " - ")) %>%
+    arrange(label) %>%
+    bind_rows(meta_results_df) %>%
+    rownames_to_column(var = "rowname") %>%
+    mutate(label      = fct_reorder(label, desc(as.numeric(as.character(rowname))))) %>%
+    mutate(size       = 6 - (se - min(se)) / (max(se) - min(se)) * 5,  # set point size to proportionate range from 1-6
+           yi_cr_lwr  = ifelse(as.character(article) == "Meta analysis", as.numeric(CR_lwr), NA),
+           yi_cr_upr  = ifelse(as.character(article) == "Meta analysis", as.numeric(CR_upr), NA),
+           results_string   = paste0(format(round(yi, 2), nsmall = 2), " [",
+                                     format(round(yi_ci_lwr, 2), nsmall = 2), ", ",
+                                     format(round(yi_ci_upr, 2), nsmall = 2), "]"))
+  
+  p1 <- 
+    ggplot(combined_plotting_data, aes(label, yi)) +
+    geom_hline(yintercept = 0, linetype = "dashed", alpha = 0.5) +
+    geom_linerange(aes(ymin = yi_ci_lwr, ymax = yi_ci_upr)) +
+    geom_linerange(aes(ymin = yi_cr_lwr, ymax = yi_cr_upr), linetype = "dotted") +
+    geom_point(shape = "square", size = combined_plotting_data$size) +
+    coord_flip() +
+    brmstools::theme_forest() +
+    theme(axis.text.y = element_text(hjust = 0))
+  
+  p2 <- 
+    ggplot(combined_plotting_data, aes(label, 1)) +
+    geom_text(aes_string(label = "results_string"),
+              hjust = "inward", 
+              size = 3) +
+    coord_flip() +
+    theme_void() + 
+    theme(panel.grid = element_blank(), panel.border = element_blank())
+  
+  # combine plots
+  plot <- p1 + p2 + plot_layout(nrow = 1, widths = c(5, 1))
+  
+  return(plot)
+}
+
+```
+
+# Inter-rater reliability of coding of effects
+
+From Vahey et al (2015): "To be included within the current meta-analysis a given statistical effect must have described the co-variation of an IRAP effect with a corresponding clinically-focused criterion variable. To qualify as clinically-focused, the IRAP and criterion variables must have been deemed to target some aspect of a condition included in a major psychiatric diagnostic scheme such as the Diagnostic and Statistical Manual of Mental Disorders (DSM-5, 2013). ... The authors decided whether the responses measured by a given IRAP trial-type should co-vary with a specific criterion variable by consulting the relevant empirical literature. In the absence of such evidence, the authors strictly excluded even substantial statistical effects between IRAP effects and accompanying variables from the current meta-analysis."
+
+In the absence of case by case citations of relevant literature that support the inclusion of these effects, two independent raters rated each effect. This is of course highly subjective, and indeed that is our point here. 
+
+In order to aid classification, we separately rated 1) whether the criterion effect was relevant to a diagnostic category, and 2) whether we considered there to be prior literature that would support the idea that the IRAP and the criterion variable should correlate.
+
+This is of course complicated by the fact that all psychological variables correlate to some degree. Separately, it is unclear as to what would constitute as relevant empirical literature (e.g., must it also use implicit measures or not).
+
+## Clinical relevance of the effect
+
+```{r}
+
+rater_data <- data_for_meta %>%
+  select(clinically_relevant_criterion_rater_1, clinically_relevant_criterion_rater_2)
+
+interrater_percent_agreement <- rater_data %>%
+  mutate(agreement = ifelse(clinically_relevant_criterion_rater_1 == clinically_relevant_criterion_rater_2, TRUE, FALSE)) %>%
+  summarize(perc_agreement = round(mean(agreement, na.rm = TRUE), 1)) %>%
+  pull(perc_agreement)
+
+kappa2(rater_data, "unweighted")
+
+```
+
+Percent of inter-rater agreement = `r interrater_percent_agreement * 100`%.
+
+## Predictability of the effect
+
+```{r}
+
+rater_data <- data_for_meta %>%
+  select(predictable_correlation_rater_1, predictable_correlation_rater_2)
+
+interrater_percent_agreement <- rater_data %>%
+  mutate(agreement = ifelse(predictable_correlation_rater_1 == predictable_correlation_rater_2, TRUE, FALSE)) %>%
+  summarize(perc_agreement = round(mean(agreement, na.rm = TRUE), 1)) %>%
+  pull(perc_agreement)
+
+kappa2(rater_data, "unweighted")
+
+```
+
+Percent of inter-rater agreement = `r interrater_percent_agreement * 100`%.
+
+# Meta analyses
+
+## 1. Computationally reproduce Vahey et al method
+
+Using Vahey's data from their supplementary materials
+
+```{r}
+
+# Hunter and Schmidt style meta analysis:
+# http://www.metafor-project.org/doku.php/tips:hunter_schmidt_method
+
+# summarize multiple outcome variables by averaging effect sizes
+data_for_meta_1 <- data_for_meta %>%
+  group_by(article) %>%
+  dplyr::summarize(ri_vahey = mean(ri_vahey, na.rm = TRUE),
+                   ni = mean(ni, na.rm = TRUE)) %>%
+  ungroup() %>%
+  na.omit() %>%
+  escalc(measure = "COR",
+         ri = ri_vahey, 
+         ni = ni,
+         data = ., 
+         vtype = "AV",  # H&S adjustment method for calculating the sampling variances of the correlation coefficients
+         slab = article, 
+         digits = 8) %>%
+  dplyr::select(article, yi, vi, ni)
+
+# fit multilevel random Effects model 
+fit_1 <- rma(yi     = yi, 
+             vi     = vi, 
+             weights = ni,   # Hunter Schmidt method, as used in original paper, requires weighting by N
+             method = "HS",  # Hunter Schmidt method, as used in original paper
+             data   = data_for_meta_1,
+             slab   = article)
+
+# make predictions 
+predictions_1 <-
+  predict(fit_1, digits = 5) %>%
+  as.data.frame() %>%
+  gather() %>%
+  round_df(2) %>%
+  dplyr::rename(metric = key,
+                estimate = value) %>%
+  mutate(metric = dplyr::recode(metric,
+                                "pred" = "Meta analysed r",
+                                "ci.lb" = "95% CI lower",
+                                "ci.ub" = "95% CI upper",
+                                "cr.lb" = "95% CR lower",
+                                "cr.ub" = "95% CR upper"))
+
+# # plot
+# metafor::forest(fit_1,
+#                 xlab = "r",
+#                 addcred = TRUE)
+
+# summarize results
+meta_effect_1 <- 
+  paste0("Meta analysis: k = ", fit_1$k, 
+         ", r = ", predictions_1$estimate[1],
+         ", 95% CI [", predictions_1$estimate[3], ", ", predictions_1$estimate[4], "]", 
+         ", 95% CR [", predictions_1$estimate[5], ", ", predictions_1$estimate[6], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_1$zval)), digits = 1))  # exact p value from z score
+
+meta_heterogeneity_1 <- 
+  paste0("Heterogeneity tests: Q(df = ", fit_1$k - 1, ") = ", round(fit_1$QE, 2), 
+         ", p = ", ifelse(fit_1$QEp < 0.0001, "< .0001", as.character(round(fit_1$QEp, 4))),
+         ", tau^2 = ", round(fit_1$tau2, 2), 
+         ", I^2 = ",   round(fit_1$I2, 2),
+         ", H^2 = ",   round(fit_1$H2, 2))
+
+```
+
+Meta effect: `r meta_effect_1`.
+
+Heterogeneity: `r meta_heterogeneity_1`.
+
+```{r fig.height=3.5, fig.width=6}
+
+forest_plot(data_for_meta_1, predictions_1)
+
+```
+
+- Is the process reproducible? 
+  - Not easily as authors could not share their code.
+- Is the outcome? 
+  - Vahey reports a meta ES of r = .45, 95% CI [.40, .54], 95% CR [.23, .67]
+  - We find `r meta_effect_1`.
+  - Therefore no.
+- Is this because our method differed somewhere, a reporting error, or some other reason?
+  - Very difficult to know without computational reproducibility (e.g., provision of scripts as well as data).
+
+## 2. Reextract Vahey's chosen effect sizes from the original studies
+
+### Compare reextractions with Vahey extractions
+
+```{r fig.height=4.5, fig.width=4.5}
+
+data_extraction_disagreements <- data_for_meta %>%
+  dplyr::select(ri_vahey, ri_vahey_reextracted) %>%
+  na.omit() %>%
+  mutate(Accuracy = ifelse(round(ri_vahey_reextracted, 2) < round(ri_vahey, 2), "Vahey et al. biased upward",
+                           "Vahey et al. biased downward\nor congruent with original article"),
+         accuracy_boolean = ifelse(round(ri_vahey_reextracted, 2) == round(ri_vahey, 2), TRUE, FALSE),
+         accuracy_boolean_loose = ifelse(round(ri_vahey_reextracted, 1) == round(ri_vahey, 1), TRUE, FALSE))
+
+perc_extraction_agreements <- data_extraction_disagreements %>%
+  summarize(perc = round(mean(accuracy_boolean, na.rm = TRUE)*100, 1)) %>%
+  pull(perc)
+
+perc_loose_extraction_agreements <- data_extraction_disagreements %>%
+  summarize(perc = round(mean(accuracy_boolean_loose, na.rm = TRUE)*100, 1)) %>%
+  pull(perc)
+
+ggplot(data_extraction_disagreements, aes(ri_vahey, ri_vahey_reextracted)) +
+  geom_abline(slope = 1, linetype = "dotted") +
+  geom_point(aes(color = Accuracy)) +
+  geom_smooth(method = "lm", fullrange = TRUE) +
+  theme_classic() +
+  scale_color_viridis_d(begin = 0.25, end = 0.75) + 
+  theme(legend.position = c(0.3, 0.8)) +
+  xlim(0, 1) +
+  ylim(0, 1) +
+  xlab("Effect size reported by Vahey et al.") +
+  ylab("Effect size reported in original article")
+
+# lm(ri_vahey ~ ri_vahey_reextracted, 
+#    data = data_for_meta) %>%
+#   sjPlot::tab_model()
+
+```
+
+Percent agreement between Vahey's extractions and our extractions `r perc_extraction_agreements`% when rounding each correlation to two decimal places, or `r perc_loose_extraction_agreements`% when using the more liberal criterion of rounding each correlation to one decimal place.
+
+### Fit meta
+
+```{r}
+
+# summarize multiple outcome variables by averaging effect sizes
+data_for_meta_2 <- data_for_meta %>%
+  group_by(article) %>%
+  dplyr::summarize(ri_vahey_reextracted = mean(ri_vahey_reextracted, na.rm = TRUE),
+                   ni = mean(ni, na.rm = TRUE)) %>%
+  ungroup() %>%
+  na.omit() %>%
+  escalc(measure = "COR",
+         ri = ri_vahey_reextracted, 
+         ni = ni,
+         data = ., 
+         vtype = "AV",  # H&S adjustment method for calculating the sampling variances of the correlation coefficients
+         slab = article, 
+         digits = 8) %>%
+  dplyr::select(article, yi, vi, ni)
+
+# fit multilevel random Effects model 
+fit_2 <- rma(yi     = yi, 
+             vi     = vi, 
+             weights = ni,   # Hunter Schmidt method, as used in original paper, requires weighting by N
+             method = "HS",  # Hunter Schmidt method, as used in original paper
+             data   = data_for_meta_2,
+             slab   = article)
+
+# make predictions 
+predictions_2 <-
+  predict(fit_2, digits = 5) %>%
+  as.data.frame() %>%
+  gather() %>%
+  round_df(2) %>%
+  dplyr::rename(metric = key,
+                estimate = value) %>%
+  mutate(metric = dplyr::recode(metric,
+                                "pred" = "Meta analysed r",
+                                "ci.lb" = "95% CI lower",
+                                "ci.ub" = "95% CI upper",
+                                "cr.lb" = "95% CR lower",
+                                "cr.ub" = "95% CR upper"))
+
+# # plot
+# metafor::forest(fit_2,
+#                 xlab = "r",
+#                 addcred = TRUE)
+
+# summarize results
+meta_effect_2 <- 
+  paste0("Meta analysis: k = ", fit_2$k, 
+         ", r = ", predictions_2$estimate[1],
+         ", 95% CI [", predictions_2$estimate[3], ", ", predictions_2$estimate[4], "]", 
+         ", 95% CR [", predictions_2$estimate[5], ", ", predictions_2$estimate[6], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_2$zval)), digits = 1))  # exact p value from z score
+
+meta_heterogeneity_2 <- 
+  paste0("Heterogeneity tests: Q(df = ", fit_2$k - 1, ") = ", round(fit_2$QE, 2), 
+         ", p = ", ifelse(fit_2$QEp < 0.0001, "< .0001", as.character(round(fit_2$QEp, 4))),
+         ", tau^2 = ", round(fit_2$tau2, 2), 
+         ", I^2 = ",   round(fit_2$I2, 2),
+         ", H^2 = ",   round(fit_2$H2, 2))
+
+```
+
+Meta effect: `r meta_effect_2`.
+
+Heterogeneity: `r meta_heterogeneity_2`.
+
+```{r fig.height=3.5, fig.width=6}
+
+forest_plot(data_for_meta_2, predictions_2)
+
+```
+
+## 3. Exclude problematic effects
+
+Specifically:
+- 1. significance from zero effects. These were higlighted by the Bayesian analysis, simulation studies, and systematic review as leading to problematic inferences. It should also be noted that they are not in fact external criterion effects, but IRAP-effect effect sizes.
+
+- 2. Effects where (mean) IRAP effects were the DV. The final conclusion of the article is that the IRAP shows promise as a tool for clinical assessment, i.e., that it can be used to predict group membership. Predicting the mean IRAP effect on the basis of known groups is of relatively little utility. See "illustrate_the_issue_of_confusing_iv_and_dv.Rmd" to illustrate this fact.  
+
+```{r}
+
+# summarize multiple outcome variables by averaging effect sizes
+data_for_meta_3 <- data_for_meta %>%
+  filter(problematic_analysis == FALSE & 
+           irap_variable_usage == "correlation") %>%
+  group_by(article) %>%
+  dplyr::summarize(ri_vahey = mean(ri_vahey, na.rm = TRUE),
+                   ni = mean(ni, na.rm = TRUE)) %>%
+  ungroup() %>%
+  na.omit() %>%
+  escalc(measure = "COR",
+         ri = ri_vahey, 
+         ni = ni,
+         data = ., 
+         vtype = "AV",  # H&S adjustment method for calculating the sampling variances of the correlation coefficients
+         slab = article, 
+         digits = 8) %>%
+  dplyr::select(article, yi, vi, ni)
+
+# fit multilevel random Effects model 
+fit_3 <- rma(yi     = yi, 
+             vi     = vi, 
+             weights = ni,   # Hunter Schmidt method, as used in original paper, requires weighting by N
+             method = "HS",  # Hunter Schmidt method, as used in original paper
+             data   = data_for_meta_3,
+             slab   = article)
+
+# make predictions 
+predictions_3 <-
+  predict(fit_3, digits = 5) %>%
+  as.data.frame() %>%
+  gather() %>%
+  round_df(2) %>%
+  dplyr::rename(metric = key,
+                estimate = value) %>%
+  mutate(metric = dplyr::recode(metric,
+                                "pred" = "Meta analysed r",
+                                "ci.lb" = "95% CI lower",
+                                "ci.ub" = "95% CI upper",
+                                "cr.lb" = "95% CR lower",
+                                "cr.ub" = "95% CR upper"))
+
+# # plot
+# metafor::forest(fit_3,
+#                 xlab = "r",
+#                 addcred = TRUE)
+
+# summarize results
+meta_effect_3 <- 
+  paste0("Meta analysis: k = ", fit_3$k, 
+         ", r = ", predictions_3$estimate[1],
+         ", 95% CI [", predictions_3$estimate[3], ", ", predictions_3$estimate[4], "]",
+         ", 95% CR [", predictions_3$estimate[5], ", ", predictions_3$estimate[6], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_3$zval)), digits = 1))  # exact p value from z score
+
+meta_heterogeneity_3 <- 
+  paste0("Heterogeneity tests: Q(df = ", fit_3$k - 1, ") = ", round(fit_3$QE, 2), 
+         ", p = ", ifelse(fit_3$QEp < 0.0001, "< .0001", as.character(round(fit_3$QEp, 4))),
+         ", tau^2 = ", round(fit_3$tau2, 2), 
+         ", I^2 = ",   round(fit_3$I2, 2),
+         ", H^2 = ",   round(fit_3$H2, 2))
+
+```
+
+Meta effect: `r meta_effect_3`.
+
+Heterogeneity: `r meta_heterogeneity_3`.
+
+```{r fig.height=3.5, fig.width=6}
+
+forest_plot(data_for_meta_3, predictions_3)
+
+```
+
+## 4. Update to more modern methods
+
+- Vahey et al report/interpret credibility intervals and heterogeneity metrics incorrectly.
+
+- When a single study reported multiple criterion effects, Vahey et al created a mean IRAP-criterion correlation. This goes against contermporary recommendations: Moeyaert et al. demonstrated that this method underestiamtes SE and therefore overestimates meta effect sizes and underestimates heterogeneity.
+
+- We therefore update to use multivariate meta-analysis models.
+  
+```{r}
+
+# multilevel meta analysis
+data_for_meta_4 <- data_for_meta %>%
+  filter(problematic_analysis == FALSE & 
+           irap_variable_usage == "correlation") %>%
+  mutate(variables = paste(irap_variable, criterion_variable, sep = "-")) %>%
+  dplyr::select(article, variables, ri_vahey, ni) %>%
+  na.omit() %>%
+  escalc(measure = "COR", 
+         ri = ri_vahey, 
+         ni = ni,
+         data = ., 
+         slab = paste(article, variables), 
+         digits = 8) %>%
+  dplyr::select(article, variables, yi, vi, ni) %>%
+  na.omit()
+
+# fit multilevel random Effects model 
+fit_4 <- rma.mv(yi     = yi, 
+                V      = vi, 
+                W      = ni,
+                random = ~ 1 | article, 
+                method = "REML",  # No H&S estimator possible for multilevel models
+                data   = data_for_meta_4,
+                slab   = paste(article, variables))
+
+# make predictions 
+predictions_4 <-
+  predict(fit_4, digits = 5) %>%
+  as.data.frame() %>%
+  gather() %>%
+  round_df(2) %>%
+  dplyr::rename(metric = key,
+                estimate = value) %>%
+  mutate(metric = dplyr::recode(metric,
+                                "pred" = "Meta analysed r",
+                                "ci.lb" = "95% CI lower",
+                                "ci.ub" = "95% CI upper",
+                                "cr.lb" = "95% CR lower",
+                                "cr.ub" = "95% CR upper"))
+
+# # plot
+# metafor::forest(fit_4,
+#                 xlab = "r",
+#                 addcred = TRUE)
+
+# summarize results
+meta_effect_4 <- 
+  paste0("Meta analysis: k = ", fit_4$k, ", r = ", predictions_4$estimate[1],
+         ", 95% CI [", predictions_4$estimate[3], ", ", predictions_4$estimate[4], "]",
+         ", 95% CR [", predictions_4$estimate[5], ", ", predictions_4$estimate[6], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_4$zval)), digits = 1))  # exact p value from z score
+
+# NB I2 is not trivial for multilevel models
+meta_heterogeneity_4 <-
+  paste0("Heterogeneity tests: Q(df = ", fit_4$k - 1, ") = ", round(fit_4$QE, 2),
+         ", p = ", ifelse(fit_4$QEp < 0.0001, "< .0001", as.character(round(fit_4$QEp, 4))),
+         ", tau^2 = ", round(fit_4$tau2, 2))
+
+```
+
+Meta effect: `r meta_effect_4`.
+
+Heterogeneity: `r meta_heterogeneity_4`.
+
+```{r fig.height=5, fig.width=15}
+
+forest_plot_mv(data_for_meta_4, predictions_4) 
+
+```
+
+## 5. Include effects that the original meta analysis excluded. 
+
+The original meta analysis adopted a sort of 'retrospective a priori predictions' approach - i.e., they extracted associations that were not predicted a priori by the original manuscripts, but which the meta authors considered to have been in principle a priori predictable. This is problematic for three reasons. First, the choice to include an effect or not was not blinded to the nature of the effect (eg direction, magintude, or significance), raising the risk of confirmation bias. Secdon, the large scope of exclusions is not immediately apparent to readers of the article, and debates could be had about the rationale for including or excluding a given effect. That is, this is a greatly more subjective meta analysis than most, and that may not be clear to many readers. Third, evidence for this lack of clarity can be found in the way that the paper is cited: the meta analysis's conclusions are reached via a (pseudo) deductive method, but it cites and is cited by work with inductive goals and methods. This is perhaps not a fundamental issue of the meta analysis (i.e., that people misuse or misinterpret it), except that a) the authors of the meta are also those who argue for the IRAP being intended to be an inductive nature elsewhere, and b) the meta cites, and is cited by, their own previous and subsequent inductive work.   
+
+We therefore provide an alternative inductive study meta analysis that includes all effects from the component papers rather than a subjective subset of them.
+
+```{r fig.height=25, fig.width=7}
+
+# multilevel meta analysis
+data_for_meta_5 <- data_for_meta %>%
+  filter(problematic_analysis == FALSE & 
+           irap_variable_usage == "correlation") %>%
+  mutate(variables = paste(irap_variable, criterion_variable, sep = "-")) %>%
+  escalc(measure = "COR", 
+         ri = ri, 
+         ni = ni,
+         data = ., 
+         slab = paste(article, variables), 
+         digits = 8) %>%
+  dplyr::select(article, variables, yi, vi, ni) %>%
+  na.omit()
+
+data_for_meta_5 %>%
+  summarize(min_yi = min(yi),
+            max_yi = max(yi)) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+# fit multilevel random Effects model 
+fit_5 <- rma.mv(yi     = yi, 
+                V      = vi, 
+                W      = ni,
+                random = ~ 1 | article, 
+                method = "REML",  # No H&S estimator possible for multilevel models
+                data   = data_for_meta_5,
+                slab   = paste(article, variables))
+
+# make predictions 
+predictions_5 <-
+  predict(fit_5, digits = 5) %>%
+  as.data.frame() %>%
+  gather() %>%
+  round_df(2) %>%
+  dplyr::rename(metric = key,
+                estimate = value) %>%
+  mutate(metric = dplyr::recode(metric,
+                                "pred" = "Meta analysed r",
+                                "ci.lb" = "95% CI lower",
+                                "ci.ub" = "95% CI upper",
+                                "cr.lb" = "95% CR lower",
+                                "cr.ub" = "95% CR upper"))
+
+# # plot
+# metafor::forest(fit_5,
+#                 xlab = "r",
+#                 addcred = TRUE)
+
+# summarize results
+meta_effect_5 <- 
+  paste0("Meta analysis: k = ", fit_5$k, ", r = ", predictions_5$estimate[1],
+         ", 95% CI [", predictions_5$estimate[3], ", ", predictions_5$estimate[4], "]", 
+         ", 95% CR [", predictions_5$estimate[5], ", ", predictions_5$estimate[6], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_5$zval)), digits = 1))  # exact p value from z score
+
+# NB I2 is not trivial for multilevel models
+meta_heterogeneity_5 <-
+  paste0("Heterogeneity tests: Q(df = ", fit_5$k - 1, ") = ", round(fit_5$QE, 2),
+         ", p = ", ifelse(fit_5$QEp < 0.0001, "< .0001", as.character(round(fit_5$QEp, 4))),
+         ", tau^2 = ", round(fit_5$tau2, 2))
+
+```
+
+Meta effect: `r meta_effect_5`.
+
+Heterogeneity: `r meta_heterogeneity_5`.
+
+```{r fig.height=30, fig.width=15}
+
+p5 <- forest_plot_mv(data_for_meta_5, predictions_5)
+p5
+
+```
+
+# Power analyses on the basis of meta analyses
+
+## Computationally reproduce original power analysis
+
+Vahey argued that the meta ES of r = .45, 95% CI [.40, .54], 95% CR [.23, .67] concluded that, to detect a zero order correlation with 80% power, 29 participants were needed when using the ES or 37 if using the lower bound of the CI.
+
+This could be computationally reproduced using the pwr R package, which agreed that to detect a zero order correlation with 80% power, `r ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` participants were needed when using the ES (0.45) or `r ceiling(pwr.r.test(n = NULL, r = 0.40, sig.level = 0.05, power = 0.8, alternative = "greater")$n)` if using the lower bound of the CI (0.40).
+
+## One tailed vs. two tailed, deductive vs. inductive future research
+
+However, the original authors do not explicate that this N is for a one tailed hypothesis (while retaining alpha = .05), which is a) uncommon for a correlation, and b) is explicitly deductive rather than inductive (as directionality has to be expected a priori). 
+
+Still using Vahey's results, this sample size estimation can be corrected: to detect a zero order correlation with 80% power, `r ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants were needed when using the ES (0.45) or `r ceiling(pwr.r.test(n = NULL, r = 0.40, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` if using the lower bound of the CI (0.40). This represents a required sample size that is `r round((ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "two.sided")$n) / ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "greater")$n))*100, 0)`% of that reccomended by the original meta analysis.
+
+## Impact of the update meta effect size on sample size estimations
+
+### Step 3: Exclusion of problematic effects
+
+This can be further updated using one of our updated meta effect size estimates from step 4 (i.e., `r meta_effect_4`. To detect a zero order correlation with 80% power, `r ceiling(pwr.r.test(n = NULL, r = predictions_3$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants were needed when using the ES (`r predictions_3$estimate[3]`) or `r ceiling(pwr.r.test(n = NULL, r = predictions_3$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` if using the lower bound of the CI (0.40). This represents a required sample size that is `r round((ceiling(pwr.r.test(n = NULL, r = predictions_3$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n) / ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "greater")$n))*100, 0)`% of that reccomended by the original meta analysis.
+
+### Step 4: Update to analytic approach
+
+This can be further updated using one of our updated meta effect size estimates from step 4 (i.e., `r meta_effect_4`. To detect a zero order correlation with 80% power, `r ceiling(pwr.r.test(n = NULL, r = predictions_4$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants were needed when using the ES (`r predictions_4$estimate[3]`) or `r ceiling(pwr.r.test(n = NULL, r = predictions_4$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` if using the lower bound of the CI (0.40). This represents a required sample size that is `r round((ceiling(pwr.r.test(n = NULL, r = predictions_4$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n) / ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "greater")$n))*100, 0)`% of that reccomended by the original meta analysis.
+
+### Step 5: Complete meta analysis of all effects 
+
+This meta is the one you should use if you're using the IRAP inductively, where data is used to generate hypotheses. 
+
+This can be further updated using one of our updated meta effect size estimates from step 5 (i.e., `r meta_effect_5`. To detect a zero order correlation with 80% power, `r ceiling(pwr.r.test(n = NULL, r = predictions_5$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` participants were needed when using the ES (`r predictions_5$estimate[3]`) or `r ceiling(pwr.r.test(n = NULL, r = predictions_5$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)` if using the lower bound of the CI (0.40). This represents a required sample size that is `r round((ceiling(pwr.r.test(n = NULL, r = predictions_5$estimate[1], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n) / ceiling(pwr.r.test(n = NULL, r = 0.45, sig.level = 0.05, power = 0.8, alternative = "greater")$n))*100, 0)`% of that reccomended by the original meta analysis.
+
+# What proportion of studies were adequately powered?
+
+```{r echo=FALSE}
+
+# proportion of effects whose samples are larger than Vahey's original recommendations
+vahey_lower_est <- ceiling(pwr.r.test(n = NULL, r = 0.40, sig.level = 0.05, power = 0.8, alternative = "greater")$n)
+
+n_exceeds_vahey_lower <- systematic_review_data %>%
+  mutate(n_greaterthan_vahey = ifelse(analysis_n_after_exclusions >= vahey_lower_est, TRUE, FALSE)) %>%
+  summarise(percentage_adequately_powered = mean(n_greaterthan_vahey, na.rm = TRUE) * 100) %>%
+  round(0) %>%
+  pull() 
+
+# proportion of effects whose samples are larger than step 4's recommendations
+step_4_lower_est <- ceiling(pwr.r.test(n = NULL, r = predictions_4$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)
+
+n_exceeds_step_4_lower <- systematic_review_data %>%
+  mutate(n_greaterthan_step_4 = ifelse(analysis_n_after_exclusions >= step_4_lower_est, 1, 0)) %>%
+  summarise(percentage_adequately_powered = mean(n_greaterthan_step_4, na.rm = TRUE) * 100) %>%
+  round(0) %>%
+  pull()
+
+# proportion of effects whose samples are larger than step 5's recommendations
+step_5_lower_est <- ceiling(pwr.r.test(n = NULL, r = predictions_5$estimate[3], sig.level = 0.05, power = 0.8, alternative = "two.sided")$n)
+
+n_exceeds_step_5_lower <- systematic_review_data %>%
+  mutate(n_greaterthan_step_5 = ifelse(analysis_n_after_exclusions >= step_5_lower_est, 1, 0)) %>%
+  summarise(percentage_adequately_powered = mean(n_greaterthan_step_5, na.rm = TRUE) * 100) %>%
+  round(0) %>%
+  pull()
+
+```
+
+## Based on the original Vahey meta analysis?
+
+Of the `r nrow(systematic_review_data)` experiments which we included in our systematic review, `r n_exceeds_vahey_lower`% of the corresponding samples met Vahey's original sample size recommendations based on the mean effect size estimate. Based on the lower bound estimate, `r n_exceeds_vahey_lower`% met the recommended sample size.
+
+## Based on our update of Vahey's meta analysis?
+
+Based on our update of Vahey et al's meta-analysis `r n_exceeds_step_4_lower`% met the recommended sample size.
+
+## Based on our inductive meta-analysis?
+
+Based on our new meta-analysis to inform inductive research, `r n_exceeds_step_5_lower`% met the recommended sample size.
+
+```{r}
+
+original_n_extractions <- data_for_meta %>%
+  filter(!(is.na(ri_vahey))) %>%
+  nrow() %>%
+  as.numeric() 
+
+original_extraction_rate <- round(original_n_extractions / nrow(data_for_meta), 2)
+
+
+new_n_extractions <- data_for_meta %>%
+  filter(clinically_relevant_criterion_either_rater == TRUE) %>%
+  nrow() %>%
+  as.numeric() 
+
+new_extraction_rate <- round(new_n_extractions / nrow(data_for_meta), 2)
+
+```
+
+# Relative extraction rates
+
+In the original meta-analysis, `r original_n_extractions` effect sizes were extracted (`r original_extraction_rate * 100`% of the total number of identified effect sizes).
+
+Following the same criteria as specified by Vahey et al., we extracted `r new_n_extractions`
+effect sizes (i.e., `r new_extraction_rate * 100`% of the total identified effect sizes).
+
+## 6. Meta-analysis excluding non-clinically relevant criteria, and excluding variables where no relationship between variables should be expected
+
+Vahey et al. included effect sizes only on the basis that they were (i) clinically-relevant outcomes, and that (ii) a relationship between the IRAP and the criterion variable could be predicted ahead of time. We conduct a meta-analysis based on our inductive meta-analysis, but only including effects which meet these two criteria. 
+
+```{r fig.height=25, fig.width=7, echo=FALSE}
+
+# multilevel meta analysis
+data_for_meta_6 <- data_for_meta %>%
+  filter(problematic_analysis == FALSE & 
+           irap_variable_usage == "correlation",
+         clinically_relevant_criterion_either_rater == TRUE,
+         predictable_correlation_rater_1 == TRUE) %>%
+  mutate(variables = paste(irap_variable, criterion_variable, sep = "-")) %>%
+  escalc(measure = "COR", 
+         ri = ri, 
+         ni = ni,
+         data = ., 
+         slab = paste(article, variables), 
+         digits = 8) %>%
+  dplyr::select(article, variables, yi, vi, ni) %>%
+  na.omit()
+
+data_for_meta_6 %>%
+  summarize(min_yi = min(yi),
+            max_yi = max(yi)) %>%
+  kable() %>%
+  kable_styling(bootstrap_options = c("striped", "hover", "condensed"), full_width = FALSE)
+
+# fit multilevel random Effects model 
+fit_6 <- rma.mv(yi     = yi, 
+                V      = vi, 
+                W      = ni,
+                random = ~ 1 | article, 
+                method = "REML",  # No H&S estimator possible for multilevel models
+                data   = data_for_meta_6,
+                slab   = paste(article, variables))
+
+# make predictions 
+predictions_6 <-
+  predict(fit_6, digits = 5) %>%
+  as.data.frame() %>%
+  gather() %>%
+  round_df(2) %>%
+  dplyr::rename(metric = key,
+                estimate = value) %>%
+  mutate(metric = dplyr::recode(metric,
+                                "pred" = "Meta analysed r",
+                                "ci.lb" = "95% CI lower",
+                                "ci.ub" = "95% CI upper",
+                                "cr.lb" = "95% CR lower",
+                                "cr.ub" = "95% CR upper"))
+
+# # plot
+# metafor::forest(fit_6,
+#                 xlab = "r",
+#                 addcred = TRUE)
+
+# summarize results
+meta_effect_6 <- 
+  paste0("Meta analysis: k = ", fit_6$k, ", r = ", predictions_6$estimate[1],
+         ", 95% CI [", predictions_6$estimate[3], ", ", predictions_6$estimate[4], "]", 
+         ", 95% CR [", predictions_6$estimate[5], ", ", predictions_6$estimate[6], "]",
+         ", p = ", signif(2*pnorm(-abs(fit_6$zval)), digits = 1))  # exact p value from z score
+
+# NB I2 is not trivial for multilevel models
+meta_heterogeneity_6 <-
+  paste0("Heterogeneity tests: Q(df = ", fit_5$k - 1, ") = ", round(fit_6$QE, 2),
+         ", p = ", ifelse(fit_6$QEp < 0.0001, "< .0001", as.character(round(fit_6$QEp, 4))),
+         ", tau^2 = ", round(fit_6$tau2, 2))
+
+```
+
+Meta effect: `r meta_effect_6`.
+
+Heterogeneity: `r meta_heterogeneity_6`.
+
+```{r fig.height=30, fig.width=15}
+
+p6 <- forest_plot_mv(data_for_meta_6, predictions_6)
+p6
+
+```
