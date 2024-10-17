@@ -1,0 +1,96 @@
+```{r}
+
+library(tidyverse)
+
+dat <- read_csv("vahey2009.csv", col_names = FALSE) |>
+  rename(name = X1, value = X2) |>
+  pivot_wider(names_from = "name", 
+              values_from = "value") |>
+  pivot_longer(cols = everything(),
+               names_to = c("valence", 
+                            "group",
+                            "metric"),
+               names_sep = "_",
+               values_to = "value") |>
+  pivot_wider(names_from = "metric",
+              values_from = "value") |>
+  rename(M = m, SE = se) |>
+  mutate(SE = SE - M, # actual value of SE is SE minus mean, as I extracted the upper intervals
+         N = case_when(group == "open" ~ 6,
+                       group == "main" ~ 15, 
+                       group == "student" ~ 30),
+         SD = SE * sqrt(N)) |>
+  mutate(group = fct_relevel(group, "student", "main", "open"),
+         valence = fct_relevel(valence, "pos", "neg"))
+
+
+ggplot(dat, aes(valence, M, fill = group)) +
+  geom_bar(stat = "identity", position = position_dodge(width = .9), color = "black") +
+  geom_errorbar(aes(ymin = M - SE, ymax = M + SE), position = position_dodge(width = .9), width = 0.1) +
+  theme_linedraw() +
+  scale_fill_manual(values = c("black", "white", "grey")) +
+  ylab("D score") +
+  xlab("IRAP trial type")
+
+
+
+# Function to calculate Cohen's d
+calculate_cohens_d <- function(mean1, mean2, sd1, sd2, n1, n2) {
+  pooled_sd <- sqrt(((n1 - 1) * sd1^2 + (n2 - 1) * sd2^2) / (n1 + n2 - 2))
+  d <- (mean1 - mean2) / pooled_sd
+  return(d)
+}
+
+
+dat_wide <- dat |>
+  select(group, valence, M, SD, N) |>
+  pivot_wider(names_from = group,
+              values_from = c(M, SD, N))
+
+dat_cohens_d <- 
+  bind_rows(
+    dat_wide |>
+      group_by(valence) %>%
+      mutate(d = pmap(list(M_student, M_main, SD_student, SD_main, N_student, N_main),
+                      calculate_cohens_d),
+             comparison = "student - main") |>
+      unnest(d),
+    dat_wide |>
+      group_by(valence) %>%
+      mutate(d = pmap(list(M_student, M_open, SD_student, SD_open, N_student, N_open),
+                      calculate_cohens_d),
+             comparison = "student - open") |>
+      unnest(d)
+  ) |>
+  ungroup() |>
+  mutate(r = d / sqrt(d^2 + 4)) |>
+  select(comparison, valence, d, r)
+
+dat_cohens_d
+
+dat_cohens_d |>
+  summarize(mean_r = mean(r))
+
+
+
+convert_r_to_d <- function(r) {
+  d = 2 * r / sqrt(1 - r^2)
+  return(d)
+}
+
+
+
+
+SD1 = .21/convert_r_to_d(0.89)
+SD2 = .34/convert_r_to_d(0.55)
+
+SD1
+SD2
+
+```
+
+Result used in Vahey et al. 2015 meta analysis: r = .44
+
+
+
+
